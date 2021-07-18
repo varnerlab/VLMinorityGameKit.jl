@@ -24,8 +24,8 @@ struct VLMinorityGameStrategy <: VLAbstractGameStrategy
     # data -
     strategy::Dict{UInt64,Int64}
 
-    function VLMinorityGameStrategy(strategyData::Array{Int64,2})
-        _ = new(strategyData)
+    function VLMinorityGameStrategy(strategy::Dict{UInt64,Int64})
+        _ = new(strategy)
     end
 end
 

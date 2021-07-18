@@ -93,7 +93,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         for _ = 1:numberOfTimeSteps
 
             # grab the last agentMemorySize block -
-            signalVector = gameWorldMemoryBuffer[(length(gameWorldMemoryBuffer) - gameWorldMemoryBuffer):end]
+            signalVector = gameWorldMemoryBuffer[(length(gameWorldMemoryBuffer) - (agentMemorySize - 1)):end]
 
             # ask the agents what their prediction will be, given this signal vector -
             for agent_index = 1:numberOfAgents
@@ -105,12 +105,12 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                 agent_prediction = _prediction(agentObject, signalVector)
 
                 # grab -
-                push!(agentPredictionArray, agent_prediction)
+                agentPredictionArray[agent_index] = agent_prediction
             end
 
             # ok, so we asked all the agents what they voted to do, now lets id the minority position -
-            winning_outcome = gameWorldVoteManager(agentPredictionArray)
-            global_outcome = sum(agentPredictionArray)
+            winning_action = gameWorldVoteManager(agentPredictionArray)
+            collective_action = sum(agentPredictionArray)
 
             # update the agents data with the winning outcome -
             for agent_index = 1:numberOfAgents
@@ -119,11 +119,11 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                 agentObject = gameAgentArray[agent_index]
 
                 # update the agent -
-                gameAgentArray[agent_index] = gameAgentUpdateManager(agentObject, signalVector, winning_outcome, global_outcome)
+                gameAgentArray[agent_index] = gameAgentUpdateManager(agentObject, signalVector, winning_action, collective_action)
             end
 
             # add the winning outcome to the system memory -
-            push!(gameWorldMemoryBuffer, winning_outcome)
+            push!(gameWorldMemoryBuffer, winning_action)
         end
 
         # return -

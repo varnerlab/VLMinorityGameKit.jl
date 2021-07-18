@@ -14,5 +14,6 @@ export VLMinorityGameStrategy
 
 # methods -
 export simulate
+export build_agent_strategy
 
 end # module
