@@ -10,16 +10,18 @@ struct VLMinorityGameWorld <: VLAbstractGameWorld
     numberOfAgents::Int64
     agentMemorySize::Int64
     gameAgentArray::Array{VLMinorityGameAgent,1}
+    gameStrategyCollection::Array{VLMinorityGameStrategy,1}
 
-    function VLMinorityGameWorld(numberOfAgents::Int64, agentMemorySize::Int64, agentArray::Array{VLMinorityGameAgent,1})
-        _ = new(numberOfAgents, agentMemorySize, agentArray)
+    function VLMinorityGameWorld(numberOfAgents::Int64, agentMemorySize::Int64, agentArray::Array{VLMinorityGameAgent,1}, 
+        gameStrategyCollection::Array{VLMinorityGameStrategy,1})
+        _ = new(numberOfAgents, agentMemorySize, agentArray, gameStrategyCollection)
     end
 end
 
 struct VLMinorityGameStrategy <: VLAbstractGameStrategy
 
     # data -
-    array::Array{Int64,2}
+    array::Dict{UInt64,Int64}
 
     function VLMinorityGameStrategy(strategyData::Array{Int64,2})
         _ = new(strategyData)
@@ -29,11 +31,12 @@ end
 mutable struct VLMinorityGameAgent <: VLAbstractGameAgent
 
     # data -
-    gameStrategyCollection::Array{VLMinorityGameStrategy,1}
+    agentStrategyCollection::Array{VLMinorityGameStrategy,1}
+    strategyRankArray::Array{Int64,1}
     wealth::Int64
 
-    function VLMinorityGameAgent(strategyObjectArray::Array{VLMinorityGameStrategy,1}, wealth::Int64)
-        _ = new(strategyObjectArray, wealth)
+    function VLMinorityGameAgent(agentStrategyCollection::Array{VLMinorityGameStrategy,1}, strategyRankArray::Array{Int64,1}, wealth::Int64)
+        _ = new(agentStrategyCollection, strategyRankArray, wealth)
     end
 end
 

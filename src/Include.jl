@@ -9,4 +9,4 @@ using Logging
 # include our codes -
 include(joinpath(_PATH_TO_BASE, "VLTypes.jl"))
 include(joinpath(_PATH_TO_BASE, "VLGameEngine.jl"))
-include(joinpath(_PATH_TO_BASE, "VLAgentFactory.jl"))
+include(joinpath(_PATH_TO_BASE, "VLGameFactory.jl"))
