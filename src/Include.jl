@@ -5,6 +5,8 @@ const _PATH_TO_BASE = joinpath(_PATH_TO_SRC, "base")
 # import packages that we will use -
 using JSON
 using Logging
+using ExperimentalDesign
+using DataFrames
 
 # include our codes -
 include(joinpath(_PATH_TO_BASE, "VLTypes.jl"))

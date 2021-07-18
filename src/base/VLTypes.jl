@@ -4,21 +4,6 @@ abstract type VLAbstractGameWorld end
 abstract type VLAbstractGameAgent end
 abstract type VLAbstractGameStrategy end
 
-# concrete types -
-struct VLMinorityGameWorld <: VLAbstractGameWorld
-
-    # data -
-    numberOfAgents::Int64
-    agentMemorySize::Int64
-    gameAgentArray::Array{VLMinorityGameAgent,1}
-    gameStrategyCollection::Array{VLMinorityGameStrategy,1}
-
-    function VLMinorityGameWorld(numberOfAgents::Int64, agentMemorySize::Int64, agentArray::Array{VLMinorityGameAgent,1}, 
-        gameStrategyCollection::Array{VLMinorityGameStrategy,1})
-        _ = new(numberOfAgents, agentMemorySize, agentArray, gameStrategyCollection)
-    end
-end
-
 struct VLMinorityGameStrategy <: VLAbstractGameStrategy
 
     # data -
@@ -36,8 +21,21 @@ mutable struct VLMinorityGameAgent <: VLAbstractGameAgent
     bestAgentStrategy::VLMinorityGameStrategy
     wealth::Int64
 
-    function VLMinorityGameAgent(agentStrategyCollection::Array{VLMinorityGameStrategy,1}, strategyRankArray::Array{Int64,1}, wealth::Int64)
-        _ = new(agentStrategyCollection, strategyRankArray, wealth)
+    function VLMinorityGameAgent(agentStrategyCollection::Array{NamedTuple,1}, bestStrategy::VLMinorityGameStrategy, wealth::Int64)
+        _ = new(agentStrategyCollection, bestStrategy, wealth)
+    end
+end
+
+# concrete types -
+struct VLMinorityGameWorld <: VLAbstractGameWorld
+
+    # data -
+    numberOfAgents::Int64
+    agentMemorySize::Int64
+    gameAgentArray::Array{VLMinorityGameAgent,1}
+
+    function VLMinorityGameWorld(numberOfAgents::Int64, agentMemorySize::Int64, agentArray::Array{VLMinorityGameAgent,1})
+        _ = new(numberOfAgents, agentMemorySize, agentArray)
     end
 end
 

@@ -11,24 +11,26 @@ function _prediction(agent::VLMinorityGameAgent, signal::Array{Int64,1})::Int64
     return strategy[hash_signal_key]
 end
 
-function _minority(agentPredictionArray::Array{Int64,1})::Int64
+function _minority(agentPredictionArray::Array{Int64,1}; alphabet::Array{Int64,1}=[-1,0,1])::Int64
 
-    # alphabet_array -
-    alphabet_array = [-1,0,1]
+    # iniialize -
+    dim_output_array = Array{Int64,1}()
 
-    # for now, lets assume we do a three component alphabet: sell = -1, hold = 0, buy = 1
-    number_of_sell = length(findall(x -> x == -1, agentPredictionArray))
-    number_of_hold = length(findall(x -> x == 0, agentPredictionArray))
-    number_of_buy = length(findall(x -> x == 1, agentPredictionArray))
+    # process each element of the alphabet -
+    for value in alphabet
+        
+        # number of items -
+        number_of_values = length(findall(x -> x == value, agentPredictionArray)) 
 
-    # setup the output array -
-    dim_output_array = [number_of_sell, number_of_hold, number_of_buy]
+        # grab -
+        push!(dim_output_array, number_of_values)
+    end
 
     # find the argmin -
     arg_min_index = argmin(dim_output_array)
-
+    precompile
     # return -
-    return alphabet_array[arg_min_index]
+    return alphabet[arg_min_index]
 end
 
 function _agent_update(agent::VLMinorityGameAgent, signal::Array{Int64,1}, winningOutcome::Int64, 

@@ -8,6 +8,7 @@ include("Include.jl")
 export VLAbstractGameWorld
 export VLAbstractGameAgent
 export VLAbstractGameStrategy
+
 export VLMinorityGameWorld
 export VLMinorityGameAgent
 export VLMinorityGameStrategy
