@@ -1,3 +1,4 @@
+using Base:NamedTuple
 # abstract types -
 abstract type VLAbstractGameWorld end
 abstract type VLAbstractGameAgent end
@@ -21,7 +22,7 @@ end
 struct VLMinorityGameStrategy <: VLAbstractGameStrategy
 
     # data -
-    array::Dict{UInt64,Int64}
+    strategy::Dict{UInt64,Int64}
 
     function VLMinorityGameStrategy(strategyData::Array{Int64,2})
         _ = new(strategyData)
@@ -31,8 +32,8 @@ end
 mutable struct VLMinorityGameAgent <: VLAbstractGameAgent
 
     # data -
-    agentStrategyCollection::Array{VLMinorityGameStrategy,1}
-    strategyRankArray::Array{Int64,1}
+    agentStrategyCollection::Array{NamedTuple,1}
+    bestAgentStrategy::VLMinorityGameStrategy
     wealth::Int64
 
     function VLMinorityGameAgent(agentStrategyCollection::Array{VLMinorityGameStrategy,1}, strategyRankArray::Array{Int64,1}, wealth::Int64)

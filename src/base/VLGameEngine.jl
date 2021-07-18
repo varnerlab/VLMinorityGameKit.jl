@@ -1,17 +1,14 @@
 # === PRIVATE METHODS BELOW HERE ====================================================================================== #
 function _prediction(agent::VLMinorityGameAgent, signal::Array{Int64,1})::Int64
 
-    # we have the agent, get the first strategy (list of strategies is sorted bext to last) -
-    agent_strategy_collection = agent.agentStrategyCollection
-    
-    # get the best strategy -
-    best_strategy = first(agent_strategy_collection)
-    
     # get the output -
     hash_signal_key = hash(signal)
-
+    
+    # get the strategy dictionary -
+    strategy = agent.bestAgentStrategy
+    
     # return -
-    return best_strategy[hash_signal_key]
+    return strategy[hash_signal_key]
 end
 
 function _minority(agentPredictionArray::Array{Int64,1})::Int64
@@ -34,7 +31,8 @@ function _minority(agentPredictionArray::Array{Int64,1})::Int64
     return alphabet_array[arg_min_index]
 end
 
-function _agent_update(agent::VLMinorityGameAgent, signal::Array{Int64,1}, winningOutcome::Int64, globalOutcome::Int64)
+function _agent_update(agent::VLMinorityGameAgent, signal::Array{Int64,1}, winningOutcome::Int64, 
+    globalOutcome::Int64)::VLMinorityGameAgent
 
     # ok, so we used the *first* strategy, what was the *predicted* outcome?
     predicted_outcome = _prediction(agent, signal)
@@ -42,10 +40,32 @@ function _agent_update(agent::VLMinorityGameAgent, signal::Array{Int64,1}, winni
     # ok, let's update the wealth -
     current_wealth = agent.wealth
     ΔW = sign(predicted_outcome * globalOutcome)
-    agent.wealth = current_wealth - ΔW
+    new_wealth = current_wealth - ΔW
+    agent.wealth = new_wealth
 
-    # let's re-rank all 
+    # let's re-rank all the strategies for this agent, and then put the new scores in an array that we can sort them
+    agentStrategyCollection = agent.agentStrategyCollection
+    tmp_score_array = Array{Int64,1}()
+    for strategy_tuple in agentStrategyCollection
+        
+        # update scores -
+        if (predicted_outcome == winningOutcome)
+            strategy_tuple.score += 1
+        end
 
+        # cache new score -
+        new_score = strategy_tuple.score
+        push!(tmp_score_array, new_score)
+    end
+
+    # sort the scores -
+    idx_sort_score = sortperm(tmp_score_array)
+    
+    # ok, so grab the best strategy, and update the best strategy pointer -
+    agent.bestAgentStrategy = agentStrategyCollection[first(idx_sort_score)].strategy
+
+    # return -
+    return agent
 end
 
 # === PRIVATE METHODS ABOVE HERE ====================================================================================== #
@@ -99,7 +119,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                 agentObject = gameAgentArray[agent_index]
 
                 # update the agent -
-                gameAgentUpdateManager(agentObject, signalVector, winning_outcome)
+                gameAgentArray[agent_index] = gameAgentUpdateManager(agentObject, signalVector, winning_outcome, global_outcome)
             end
 
             # add the winning outcome to the system memory -
@@ -110,7 +130,8 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         return_tuple = (agents = gameAgentArray, memory = gameWorldMemoryBuffer)
         return return_tuple
     catch error
-        # if we get here ... something bad has happend. do nothing for now ...
+        # if we get here ... something bad has happend. do nothing for now 
+        # ...
     end
 end
 # === PUBLIC METHODS ABOVE HERE ======================================================================================= #
