@@ -1,0 +1,8 @@
+name = "VLMinorityGameKit"
+uuid = "f59c446a-ffa0-4693-aa3c-42408c914cac"
+authors = ["Varnerlab <jdv27@cornell.edu>"]
+version = "0.1.0"
+
+[deps]
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
