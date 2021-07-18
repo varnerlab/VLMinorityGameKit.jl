@@ -30,9 +30,10 @@ mutable struct VLMinorityGameAgent <: VLAbstractGameAgent
 
     # data -
     gameStrategyCollection::Array{VLMinorityGameStrategy,1}
+    wealth::Int64
 
-    function VLMinorityGameAgent(strategyObjectArray::Array{VLMinorityGameStrategy,1})
-        _ = new(strategyObjectArray)
+    function VLMinorityGameAgent(strategyObjectArray::Array{VLMinorityGameStrategy,1}, wealth::Int64)
+        _ = new(strategyObjectArray, wealth)
     end
 end
 

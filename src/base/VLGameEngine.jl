@@ -1,5 +1,8 @@
 # === PRIVATE METHODS BELOW HERE ====================================================================================== #
 function _prediction(agent::VLMinorityGameAgent, signal::Array{Int64,1})::Int64
+
+        
+
 end
 
 function _minority(agentPredictionArray::Array{Int64,1})::Int64
