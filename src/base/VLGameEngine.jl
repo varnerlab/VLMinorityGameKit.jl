@@ -9,9 +9,12 @@ function _prediction(agent::VLMinorityGameAgent, signal::Array{Int64,1})::Int64
 
     # from the strategy object, get the actual impl of the strategy -
     strategy = strategy_object.strategy
+
+    # what is predcited?
+    predicted_action = strategy[hash_signal_key]
     
     # return -
-    return strategy[hash_signal_key]
+    return predicted_action
 end
 
 function _minority(agentPredictionArray::Array{Int64,1}; alphabet::Array{Int64,1}=[-1,0,1])::Int64
@@ -31,7 +34,7 @@ function _minority(agentPredictionArray::Array{Int64,1}; alphabet::Array{Int64,1
 
     # find the argmin -
     arg_min_index = argmin(dim_output_array)
-    precompile
+    
     # return -
     return alphabet[arg_min_index]
 end
@@ -88,6 +91,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
 
         gameWorldMemoryBuffer = Array{Int64,1}() 
         agentPredictionArray = Array{Int64,1}(undef, numberOfAgents)
+        agentWealthCache = Array{Int64,2}(undef,numberOfAgents, numberOfTimeSteps)
 
         # initialize -
         for _ = 1:(agentMemorySize + 1)
@@ -95,7 +99,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         end
         
         # main loop -
-        for _ = 1:numberOfTimeSteps
+        for time_step_index = 1:numberOfTimeSteps
 
             # grab the last agentMemorySize block -
             signalVector = gameWorldMemoryBuffer[(length(gameWorldMemoryBuffer) - (agentMemorySize - 1)):end]
@@ -124,7 +128,13 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                 agentObject = gameAgentArray[agent_index]
 
                 # update the agent -
-                gameAgentArray[agent_index] = gameAgentUpdateManager(agentObject, signalVector, winning_action, collective_action)
+                updated_agent = gameAgentUpdateManager(agentObject, signalVector, winning_action, collective_action)
+
+                # update the array (not required ...?)
+                gameAgentArray[agent_index] = updated_agent
+
+                # lets cache the wealth -
+                agentWealthCache[agent_index, time_step_index] = updated_agent.wealth
             end
 
             # add the winning outcome to the system memory -
@@ -132,7 +142,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         end
 
         # return -
-        return_tuple = (agents = gameAgentArray, memory = gameWorldMemoryBuffer)
+        return_tuple = (agents = gameAgentArray, memory = gameWorldMemoryBuffer, agentWealthCache = agentWealthCache)
         return return_tuple
     catch error
         # if we get here ... something bad has happend. do nothing for now 

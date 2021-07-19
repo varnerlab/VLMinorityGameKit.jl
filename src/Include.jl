@@ -7,6 +7,7 @@ using JSON
 using Logging
 using ExperimentalDesign
 using DataFrames
+using Plots
 
 # include our codes -
 include(joinpath(_PATH_TO_BASE, "VLTypes.jl"))

@@ -2,8 +2,8 @@ using VLMinorityGameKit
 
 # setup call -
 actions = [-1,0,1]
-memory = 4
-numberOfStrategiesPerAgent = 2
+memory = 5
+numberOfStrategiesPerAgent = 4
 numberOfAgents = 100
 
 # build the game world -
@@ -11,5 +11,5 @@ numberOfAgents = 100
 gameWorld = build_game_world(numberOfAgents, memory, numberOfStrategiesPerAgent; actions = actions)
 
 # setup the number of time steps -
-numberOfTimeSteps = 10
+numberOfTimeSteps = 1000
 result = simulate(gameWorld, numberOfTimeSteps)
