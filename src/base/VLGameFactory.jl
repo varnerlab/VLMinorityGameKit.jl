@@ -45,4 +45,30 @@ function build_agent_strategy(actions::Array{Int64,1}, memory::Int64)::VLMinorit
         rethrow(error)
     end
 end
+
+function build_game_agent(numberOfStrategiesPerAgent::Int64, agentMemorySize::Int64; 
+    actions::Array{Int64,1} = [-1,0,1])::VLMinorityGameAgent
+
+    try
+
+        # TODO: fill me in ...
+
+    catch error
+        # just rethrow the error for now ...
+        rethrow(error)
+    end
+end
+
+function build_game_world(numberOfAgents::Int64, agentMemorySize::Int64; 
+    actions::Array{Int64,1} = [-1,0,1])::VLMinorityGameWorld
+
+    try
+
+        # TODO: fill me in ...
+
+    catch error
+        # just rethrow the error for now ...
+        rethrow(error)
+    end
+end
 # === PUBLIC METHODS ABOVE HERE ======================================================================================= #
