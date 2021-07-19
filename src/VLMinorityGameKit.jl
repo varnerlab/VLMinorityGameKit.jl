@@ -12,6 +12,7 @@ export VLAbstractGameStrategy
 export VLMinorityGameWorld
 export VLMinorityGameAgent
 export VLMinorityGameStrategy
+export VLMinorityGameStrategyScoreWrapper
 
 # methods -
 export simulate

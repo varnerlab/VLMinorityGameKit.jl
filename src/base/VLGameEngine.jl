@@ -4,8 +4,11 @@ function _prediction(agent::VLMinorityGameAgent, signal::Array{Int64,1})::Int64
     # get the output -
     hash_signal_key = hash(signal)
     
-    # get the strategy dictionary -
-    strategy = agent.bestAgentStrategy
+    # get the strategy object -
+    strategy_object = agent.bestAgentStrategy
+
+    # from the strategy object, get the actual impl of the strategy -
+    strategy = strategy_object.strategy
     
     # return -
     return strategy[hash_signal_key]
@@ -84,7 +87,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         gameAgentArray = worldObject.gameAgentArray
 
         gameWorldMemoryBuffer = Array{Int64,1}() 
-        agentPredictionArray = Array{Int64,1}(undef, agentMemorySize)
+        agentPredictionArray = Array{Int64,1}(undef, numberOfAgents)
 
         # initialize -
         for _ = 1:(agentMemorySize + 1)
@@ -133,7 +136,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         return return_tuple
     catch error
         # if we get here ... something bad has happend. do nothing for now 
-        # ...
+        rethrow(error)
     end
 end
 # === PUBLIC METHODS ABOVE HERE ======================================================================================= #

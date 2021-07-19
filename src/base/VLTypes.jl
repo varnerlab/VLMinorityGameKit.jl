@@ -14,14 +14,24 @@ struct VLMinorityGameStrategy <: VLAbstractGameStrategy
     end
 end
 
+mutable struct VLMinorityGameStrategyScoreWrapper
+    score::Int64
+    strategy::VLMinorityGameStrategy 
+
+    function VLMinorityGameStrategyScoreWrapper()
+        _ = new()
+    end
+end
+
 mutable struct VLMinorityGameAgent <: VLAbstractGameAgent
 
     # data -
-    agentStrategyCollection::Array{NamedTuple,1}
-    bestAgentStrategy::VLMinorityGameStrategy
+    agentStrategyCollection::Array{VLMinorityGameStrategyScoreWrapper,1}
+    bestAgentStrategy::Union{Nothing, VLMinorityGameStrategy}
     wealth::Int64
 
-    function VLMinorityGameAgent(agentStrategyCollection::Array{NamedTuple,1}, bestStrategy::VLMinorityGameStrategy, wealth::Int64)
+    function VLMinorityGameAgent(agentStrategyCollection::Array{VLMinorityGameStrategyScoreWrapper,1}; 
+        bestStrategy::Union{Nothing, VLMinorityGameStrategy} = nothing, wealth::Int64 = 0)
         _ = new(agentStrategyCollection, bestStrategy, wealth)
     end
 end

@@ -1,5 +1,3 @@
-# === PRIVATE METHODS BELOW HERE ====================================================================================== #
-# === PRIVATE METHODS ABOVE HERE ====================================================================================== #
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
 function build_agent_strategy(actions::Array{Int64,1}, memory::Int64)::VLMinorityGameStrategy
@@ -51,21 +49,57 @@ function build_game_agent(numberOfStrategiesPerAgent::Int64, agentMemorySize::In
 
     try
 
-        # TODO: fill me in ...
+        # build a collection of strategies for this agent -
+        # each agent is going to need numberOfStrategiesPerAgent strategies 
+        local_strategy_cache = Array{VLMinorityGameStrategyScoreWrapper,1}(undef,numberOfStrategiesPerAgent)
+        for strategy_index = 1:numberOfStrategiesPerAgent
+            
+            # build the strategy -
+            strategy = build_agent_strategy(actions, agentMemorySize)
 
+            # initially all strategies will have a score of zero -
+            score = 0
+
+            # package -
+            strategy_wrapper = VLMinorityGameStrategyScoreWrapper()
+            strategy_wrapper.score = score
+            strategy_wrapper.strategy = strategy
+            local_strategy_cache[strategy_index] = strategy_wrapper
+        end
+
+        # build agent object - use the first strategy as the best -
+        return VLMinorityGameAgent(local_strategy_cache; bestStrategy = first(local_strategy_cache).strategy)
     catch error
         # just rethrow the error for now ...
         rethrow(error)
     end
 end
 
-function build_game_world(numberOfAgents::Int64, agentMemorySize::Int64; 
+function build_game_world(numberOfAgents::Int64, agentMemorySize::Int64, numberOfStrategiesPerAgent::Int64; 
     actions::Array{Int64,1} = [-1,0,1])::VLMinorityGameWorld
 
     try
 
-        # TODO: fill me in ...
+        # in order to create a game world, we need:
+        # numberOfAgents::Int64
+        # agentMemorySize::Int64
+        # gameAgentArray::Array{VLMinorityGameAgent,1}
 
+        # iniialize -
+        gameAgentArray = Array{VLMinorityGameAgent,1}(undef, numberOfAgents)
+
+        # we have two of the three, lets create an array of game agents -
+        for agent_index = 1:numberOfAgents
+
+            # create an agent -
+            agent = build_game_agent(numberOfStrategiesPerAgent, agentMemorySize; actions = actions)
+
+            # package -
+            gameAgentArray[agent_index] = agent
+        end
+
+        # build the game world -
+        return VLMinorityGameWorld(numberOfAgents, agentMemorySize, gameAgentArray)
     catch error
         # just rethrow the error for now ...
         rethrow(error)
