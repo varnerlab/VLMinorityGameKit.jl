@@ -10,6 +10,10 @@ function _prediction(agent::VLMinorityGameAgent, signal::Array{Int64,1})::Int64
     # from the strategy object, get the actual impl of the strategy -
     strategy = strategy_object.strategy
 
+    if (haskey(strategy, hash_signal_key) == false)
+        @show signal
+    end
+
     # what is predcited?
     predicted_action = strategy[hash_signal_key]
     
@@ -17,13 +21,13 @@ function _prediction(agent::VLMinorityGameAgent, signal::Array{Int64,1})::Int64
     return predicted_action
 end
 
-function _minority(agentPredictionArray::Array{Int64,1}; alphabet::Array{Int64,1}=[-1,0,1])::Int64
+function _minority(agentPredictionArray::Array{Int64,1}; actions::Array{Int64,1}=[-1,0,1])::Int64
 
     # iniialize -
     dim_output_array = Array{Int64,1}()
 
     # process each element of the alphabet -
-    for value in alphabet
+    for value in actions
         
         # number of items -
         number_of_values = length(findall(x -> x == value, agentPredictionArray)) 
@@ -36,7 +40,7 @@ function _minority(agentPredictionArray::Array{Int64,1}; alphabet::Array{Int64,1
     arg_min_index = argmin(dim_output_array)
     
     # return -
-    return alphabet[arg_min_index]
+    return actions[arg_min_index]
 end
 
 function _agent_update(agent::VLMinorityGameAgent, signal::Array{Int64,1}, winningOutcome::Int64, 
@@ -79,7 +83,7 @@ end
 # === PRIVATE METHODS ABOVE HERE ====================================================================================== #
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
-function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
+function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; actions::Array{Int64,1}=[-1,0,1],
     gameWorldVoteManager::Function=_minority, gameAgentUpdateManager::Function=_agent_update)::NamedTuple
 
     try
@@ -118,7 +122,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
             end
 
             # ok, so we asked all the agents what they voted to do, now lets id the minority position -
-            winning_action = gameWorldVoteManager(agentPredictionArray)
+            winning_action = gameWorldVoteManager(agentPredictionArray; actions=actions)
             collective_action = sum(agentPredictionArray)
 
             # update the agents data with the winning outcome -

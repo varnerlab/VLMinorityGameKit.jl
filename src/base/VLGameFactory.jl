@@ -92,7 +92,7 @@ function build_game_world(numberOfAgents::Int64, agentMemorySize::Int64, numberO
         for agent_index = 1:numberOfAgents
 
             # create an agent -
-            agent = build_game_agent(numberOfStrategiesPerAgent, agentMemorySize; actions = actions)
+            agent = build_game_agent(numberOfStrategiesPerAgent, agentMemorySize; actions=actions)
 
             # package -
             gameAgentArray[agent_index] = agent
