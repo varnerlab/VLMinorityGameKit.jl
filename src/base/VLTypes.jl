@@ -31,7 +31,7 @@ mutable struct VLMinorityGameAgent <: VLAbstractGameAgent
     wealth::Int64
 
     function VLMinorityGameAgent(agentStrategyCollection::Array{VLMinorityGameStrategyScoreWrapper,1}; 
-        bestStrategy::Union{Nothing, VLMinorityGameStrategy} = nothing, wealth::Int64 = 0)
+        bestStrategy::Union{Nothing, VLMinorityGameStrategy} = nothing, wealth::Int64 = 1)
         _ = new(agentStrategyCollection, bestStrategy, wealth)
     end
 end

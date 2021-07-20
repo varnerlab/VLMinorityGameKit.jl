@@ -10,16 +10,16 @@ function build_agent_strategy(actions::Array{Int64,1}, memory::Int64)::VLMinorit
         # ok, so lets build a strategy -
         size_of_alphabet = length(actions)
         number_of_elements = (size_of_alphabet)^memory
-
-        # get the min, and max of the alphabet -
-        min_value = minimum(actions)
-        max_value = maximum(actions)
+        outcome_vector = Array{Int64,1}(undef,number_of_elements)
 
         # generate the design matrix -
         M = Matrix(FullFactorial(fill(actions, memory)).matrix)
 
         # generate an outcome vector -
-        outcome_vector = rand(min_value:max_value, number_of_elements)
+        outcome_index_vector = rand(1:size_of_alphabet, number_of_elements)
+        for index = 1:number_of_elements
+            outcome_vector[index] = actions[outcome_index_vector[index]]
+        end
 
         # mush the M and outcomes together -
         strategy_array = hcat(M, outcome_vector)
@@ -90,6 +90,8 @@ function build_game_world(numberOfAgents::Int64, agentMemorySize::Int64, numberO
 
         # we have two of the three, lets create an array of game agents -
         for agent_index = 1:numberOfAgents
+
+            println("Building agent $(agent_index) of $(numberOfAgents)")
 
             # create an agent -
             agent = build_game_agent(numberOfStrategiesPerAgent, agentMemorySize; actions=actions)

@@ -9,7 +9,6 @@ function _prediction(agent::VLMinorityGameAgent, signal::Array{Int64,1})::Int64
 
     # from the strategy object, get the actual impl of the strategy -
     strategy = strategy_object.strategy
-
     if (haskey(strategy, hash_signal_key) == false)
         @show signal
     end
@@ -34,13 +33,18 @@ function _minority(agentPredictionArray::Array{Int64,1}; actions::Array{Int64,1}
 
         # grab -
         push!(dim_output_array, number_of_values)
+
+        println("N = $(number_of_values) for v = $(value)")
     end
 
     # find the argmin -
     arg_min_index = argmin(dim_output_array)
+    action_value = actions[arg_min_index]
+
+    println("what is arg_min_index = $(arg_min_index) and av = $(action_value)")
     
     # return -
-    return actions[arg_min_index]
+    return action_value
 end
 
 function _agent_update(agent::VLMinorityGameAgent, signal::Array{Int64,1}, winningOutcome::Int64, 
@@ -84,7 +88,7 @@ end
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
 function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; actions::Array{Int64,1}=[-1,0,1],
-    gameWorldVoteManager::Function=_minority, gameAgentUpdateManager::Function=_agent_update)::NamedTuple
+    gameWorldVoteManager::Function=_minority)::NamedTuple
 
     try
 
@@ -92,14 +96,21 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; ac
         numberOfAgents = worldObject.numberOfAgents
         agentMemorySize = worldObject.agentMemorySize
         gameAgentArray = worldObject.gameAgentArray
+        length_of_actions = length(actions)
 
         gameWorldMemoryBuffer = Array{Int64,1}() 
         agentPredictionArray = Array{Int64,1}(undef, numberOfAgents)
-        agentWealthCache = Array{Int64,2}(undef,numberOfAgents, numberOfTimeSteps)
+        agentWealthCache = Array{Int64,2}(undef,numberOfAgents, numberOfTimeSteps+1)
+        collectiveActionArray = Array{Int64,1}(undef,numberOfTimeSteps)
 
         # initialize -
         for _ = 1:(agentMemorySize + 1)
-            push!(gameWorldMemoryBuffer, 1)
+            r = rand(1:length_of_actions)
+            push!(gameWorldMemoryBuffer, actions[r])
+        end
+
+        for agent_index = 1:numberOfAgents
+            agentWealthCache[agent_index,1] = 1
         end
         
         # main loop -
@@ -125,20 +136,53 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; ac
             winning_action = gameWorldVoteManager(agentPredictionArray; actions=actions)
             collective_action = sum(agentPredictionArray)
 
+            println("w = $(winning_action) and collective = $(collective_action)")
+
+            # grab the collective action -
+            collectiveActionArray[time_step_index] = collective_action
+
             # update the agents data with the winning outcome -
             for agent_index = 1:numberOfAgents
                 
                 # grab the agent -
                 agentObject = gameAgentArray[agent_index]
 
-                # update the agent -
-                updated_agent = gameAgentUpdateManager(agentObject, signalVector, winning_action, collective_action)
+                # what did this agent predict?
+                agentPrediction = agentPredictionArray[agent_index]
 
-                # update the array (not required ...?)
-                gameAgentArray[agent_index] = updated_agent
+                # let's update the wealth -
+                current_wealth = agentObject.wealth
+                ΔW = -1*sign(agentPrediction * collective_action)
+                new_wealth = current_wealth + ΔW
+                agentObject.wealth = new_wealth
+
+                # println("agent_index = $(agent_index) predicted = $(agentPrediction) but w = $(winning_action) and c = $(collective_action) so ΔW = $(ΔW)")
+
+                # let's re-rank all the strategies for this agent, and then put the new scores in an array that we can sort them
+                agentStrategyCollection = agentObject.agentStrategyCollection
+                tmp_score_array = Array{Int64,1}()
+                for strategy_tuple in agentStrategyCollection
+        
+                    # update scores -
+                    if (agentPrediction == winning_action)
+                        strategy_tuple.score += 1
+                    else
+                        strategy_tuple.score -= 1
+                    end
+
+                    # cache new score -
+                    new_score = strategy_tuple.score
+                    push!(tmp_score_array, new_score)
+                end
+
+                # sort the scores -
+                idx_sort_score = sortperm(tmp_score_array)
+    
+                # ok, so grab the best strategy, and update the best strategy pointer -
+                agentObject.bestAgentStrategy = agentStrategyCollection[first(idx_sort_score)].strategy
 
                 # lets cache the wealth -
-                agentWealthCache[agent_index, time_step_index] = updated_agent.wealth
+                agentWealthCache[agent_index, time_step_index+1] = agentObject.wealth
             end
 
             # add the winning outcome to the system memory -
@@ -146,7 +190,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; ac
         end
 
         # return -
-        return_tuple = (agents = gameAgentArray, memory = gameWorldMemoryBuffer, agentWealthCache = agentWealthCache)
+        return_tuple = (a=agentPredictionArray, memory = gameWorldMemoryBuffer, wealth = agentWealthCache, collective = collectiveActionArray)
         return return_tuple
     catch error
         # if we get here ... something bad has happend. do nothing for now 
