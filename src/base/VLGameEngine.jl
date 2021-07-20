@@ -100,8 +100,8 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; ac
 
         gameWorldMemoryBuffer = Array{Int64,1}() 
         agentPredictionArray = Array{Int64,1}(undef, numberOfAgents)
-        agentWealthCache = Array{Int64,2}(undef,numberOfAgents, numberOfTimeSteps+1)
-        collectiveActionArray = Array{Int64,1}(undef,numberOfTimeSteps)
+        agentWealthCache = Array{Int64,2}(undef, numberOfAgents, numberOfTimeSteps + 1)
+        collectiveActionArray = Array{Int64,1}(undef, numberOfTimeSteps)
 
         # initialize -
         for _ = 1:(agentMemorySize + 1)
@@ -152,7 +152,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; ac
 
                 # let's update the wealth -
                 current_wealth = agentObject.wealth
-                ΔW = -1*sign(agentPrediction * collective_action)
+                ΔW = -1 * (agentPrediction * (collective_action / numberOfAgents))
                 new_wealth = current_wealth + ΔW
                 agentObject.wealth = new_wealth
 
@@ -182,7 +182,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; ac
                 agentObject.bestAgentStrategy = agentStrategyCollection[first(idx_sort_score)].strategy
 
                 # lets cache the wealth -
-                agentWealthCache[agent_index, time_step_index+1] = agentObject.wealth
+                agentWealthCache[agent_index, time_step_index + 1] = agentObject.wealth
             end
 
             # add the winning outcome to the system memory -
@@ -190,7 +190,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; ac
         end
 
         # return -
-        return_tuple = (a=agentPredictionArray, memory = gameWorldMemoryBuffer, wealth = agentWealthCache, collective = collectiveActionArray)
+        return_tuple = (a = agentPredictionArray, memory = gameWorldMemoryBuffer, wealth = agentWealthCache, collective = collectiveActionArray)
         return return_tuple
     catch error
         # if we get here ... something bad has happend. do nothing for now 
