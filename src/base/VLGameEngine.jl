@@ -100,7 +100,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; ac
 
         gameWorldMemoryBuffer = Array{Int64,1}() 
         agentPredictionArray = Array{Int64,1}(undef, numberOfAgents)
-        agentWealthCache = Array{Int64,2}(undef, numberOfAgents, numberOfTimeSteps + 1)
+        agentWealthCache = Array{Union{Int64, Float64},2}(undef, numberOfAgents, numberOfTimeSteps + 1)
         collectiveActionArray = Array{Int64,1}(undef, numberOfTimeSteps)
 
         # initialize -

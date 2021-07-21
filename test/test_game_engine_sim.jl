@@ -1,20 +1,15 @@
 using VLMinorityGameKit
+using BSON
 
-# setup call -
+# setup -
 actionArray = [-1,1]
-memory = 8
-numberOfStrategiesPerAgent = 5
-numberOfAgents = 1001
-
-println("Building the game world - start")
-
-# build the game world -
-# args: numberOfAgents::Int64, agentMemorySize::Int64, numberOfStrategiesPerAgent::Int64; actions::Array{Int64,1} = [-1,0,1]
-gameWorld = build_game_world(numberOfAgents, memory, numberOfStrategiesPerAgent; actions=actionArray)
+path_to_game_world = "/Users/jeffreyvarner/Desktop/julia_work/VLMinorityGameKit.jl/test/data/GW-M10-S5-NA1001.bson"
+d = BSON.load(path_to_game_world)
+gameWorld = d[:gameworld]
 
 println("Building the game world - finished. Starting the simulation ...")
 
 # setup the number of time steps -
-numberOfTimeSteps = 201
+numberOfTimeSteps = 301
 result = simulate(gameWorld, numberOfTimeSteps; actions=actionArray);
 nothing
