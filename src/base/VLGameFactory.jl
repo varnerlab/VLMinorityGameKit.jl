@@ -18,7 +18,7 @@ end
 
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
-function build_agent_strategy(memory::Int64)::VLMinorityGameStrategy
+function build_agent_strategy(memory::Int64, score::Int64)::VLMinorityGameStrategy
 
     try
 
@@ -39,7 +39,7 @@ function build_agent_strategy(memory::Int64)::VLMinorityGameStrategy
         end
 
         # return -
-        return VLMinorityGameStrategy(outcome_vector)
+        return VLMinorityGameStrategy(outcome_vector, score)  # default: score = 0 strategy
     catch error
         rethrow(error)
     end
@@ -51,24 +51,18 @@ function build_game_agent(numberOfStrategiesPerAgent::Int64, agentMemorySize::In
 
         # build a collection of strategies for this agent -
         # each agent is going to need numberOfStrategiesPerAgent strategies 
-        local_strategy_cache = Array{VLMinorityGameStrategyScoreWrapper,1}(undef, numberOfStrategiesPerAgent)
+        local_strategy_cache = Array{VLMinorityGameStrategy,1}(undef, numberOfStrategiesPerAgent)
         for strategy_index = 1:numberOfStrategiesPerAgent
             
-            # build the strategy -
-            strategy = build_agent_strategy(agentMemorySize)
-
-            # initially all strategies will have a score of zero -
-            score = 0
+            # build the strategy - initially all strategies will have a score of zero -
+            strategy = build_agent_strategy(agentMemorySize, 0)
 
             # package -
-            strategy_wrapper = VLMinorityGameStrategyScoreWrapper()
-            strategy_wrapper.score = score
-            strategy_wrapper.strategy = strategy
-            local_strategy_cache[strategy_index] = strategy_wrapper
+            local_strategy_cache[strategy_index] = strategy
         end
 
         # build agent object - use the first strategy as the best -
-        return VLMinorityGameAgent(local_strategy_cache; bestStrategy=first(local_strategy_cache).strategy)
+        return VLMinorityGameAgent(local_strategy_cache; bestStrategy=first(local_strategy_cache))
     catch error
         # just rethrow the error for now ...
         rethrow(error)

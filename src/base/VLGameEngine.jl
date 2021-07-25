@@ -28,7 +28,6 @@ function _minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::A
     numberOfAgents = length(gameAgentArray)
     actions = [-1,1]
 
-
     # ask the agents what their prediction will be, given this signal vector -
     agentPredictionArray = Array{Int64,1}(undef, numberOfAgents)
     for agent_index = 1:numberOfAgents
@@ -151,44 +150,31 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                 agentStrategyCollection = agentObject.agentStrategyCollection
                 tmp_score_array = Array{Int64,1}()
                 strategy_index = 1
-                for strategy_tuple in agentStrategyCollection
+                for strategy_object in agentStrategyCollection
         
-                    # update scores -
-                    strategy_object = strategy_tuple.strategy
-
                     # compute the prediction for this strategy -
                     strategy_prediction = _prediction(signalVector, strategy_object)
 
                     # update the score -
-                    old_score = strategy_tuple.score
+                    old_score = strategy_object.score
                     ΔS = -1 * sign(strategy_prediction * collective_action)
                     new_score = old_score + ΔS
-                    strategy_tuple.score = new_score
+                    strategy_object.score = new_score
                     
                     # cache new score -
                     push!(tmp_score_array, new_score)
 
-                    # output -
-                    # println("t = $(time_step_index) ai = $(agent_index) si = $(strategy_index) sp = $(strategy_prediction) ca = $(collective_action) ΔS = $(ΔS) new_score = $(new_score)")
-                    
-                    strategy_index += 1
+                    # update -
+                    agentStrategyCollection[strategy_index] = strategy_object
+                    strategy_index = strategy_index + 1
                 end
 
                 # sort the scores -
                 idx_sort_score = sortperm(tmp_score_array)
 
-                # ok, so lets interject a little randomness into the process ...
-                mistake_chance = rand()
-                if (mistake_chance <= 0.95)
-                    
-                    # ok, so grab the best strategy, and update the best strategy pointer - we do this 95% of the time
-                    agentObject.bestAgentStrategy = agentStrategyCollection[first(idx_sort_score)].strategy
-                else
-                    
-                    # ooops - pick the worst ... we do this only 5% of the time
-                    agentObject.bestAgentStrategy = agentStrategyCollection[last(idx_sort_score)].strategy
-                end
-
+                # ok, so grab the best strategy, and update the best strategy pointer 
+                agentObject.bestAgentStrategy = agentStrategyCollection[first(idx_sort_score)]
+                
                 # lets cache the wealth -
                 # agentWealthCache[agent_index, time_step_index + 1] = agentObject.wealth
             end
