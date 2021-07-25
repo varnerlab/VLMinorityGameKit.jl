@@ -164,16 +164,21 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                     # cache new score -
                     push!(tmp_score_array, new_score)
 
+                    # println("ti = $(time_step_index) ai=$(agent_index) si = $(strategy_index) os = $(old_score) ns=$(new_score)")
+
                     # update -
-                    agentStrategyCollection[strategy_index] = strategy_object
-                    strategy_index = strategy_index + 1
+                    # agentStrategyCollection[strategy_index] = strategy_object
+                    # strategy_index = strategy_index + 1
                 end
 
                 # sort the scores -
                 idx_sort_score = sortperm(tmp_score_array)
 
+                # @show tmp_score_array
+                # println("ai=$(agent_index) new best index = $(last(idx_sort_score))")
+
                 # ok, so grab the best strategy, and update the best strategy pointer 
-                agentObject.bestAgentStrategy = agentStrategyCollection[first(idx_sort_score)]
+                agentObject.bestAgentStrategy = agentStrategyCollection[last(idx_sort_score)]
                 
                 # lets cache the wealth -
                 # agentWealthCache[agent_index, time_step_index + 1] = agentObject.wealth

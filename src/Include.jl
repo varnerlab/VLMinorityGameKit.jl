@@ -9,6 +9,10 @@ using DataFrames
 using Plots
 using BSON
 using Distributions
+using Random
+
+# set the seed -
+Random.seed!(Random.make_seed())
 
 # include our codes -
 include(joinpath(_PATH_TO_BASE, "VLTypes.jl"))
