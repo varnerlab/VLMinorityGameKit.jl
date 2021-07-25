@@ -20,4 +20,7 @@ export build_agent_strategy
 export build_game_agent
 export build_game_world
 
+# for debug -
+export design
+
 end # module
