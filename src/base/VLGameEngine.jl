@@ -1,13 +1,8 @@
 # === PRIVATE METHODS BELOW HERE ====================================================================================== #
-function _minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::Array{Int64,1})::NamedTuple
-
-    # iniialize -
-    dim_output_array = Array{Int64,1}()
-    numberOfAgents = length(gameAgentArray)
-    memory = length(signalVector)
-    actions = [-1,1]
+function _prediction(signalVector::Array{Int64,1}, strategyObject::VLMinorityGameStrategy)::Int64
 
     # we use binary 0,1 under the covers - so lets get rid of the -1 and replace w/0 -
+    memory = length(signalVector)
     binarySignal = replace(signalVector, -1 => 0)
     iv = range(memory, stop=1, step=-1) |> collect
 
@@ -17,6 +12,22 @@ function _minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::A
         value = binarySignal[index]
         strategy_index += value * 2^(memory - index)
     end
+
+    # from the strategy object, get the actual impl of the strategy -
+    strategyImpl = strategyObject.strategy
+
+    # compute the predicted outcome -
+    return strategyImpl[strategy_index + 1]
+end
+
+
+function _minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::Array{Int64,1})::NamedTuple
+
+    # iniialize -
+    dim_output_array = Array{Int64,1}()
+    numberOfAgents = length(gameAgentArray)
+    actions = [-1,1]
+
 
     # ask the agents what their prediction will be, given this signal vector -
     agentPredictionArray = Array{Int64,1}(undef, numberOfAgents)
@@ -28,11 +39,8 @@ function _minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::A
         # get the strategy object -
         strategy_object = agentObject.bestAgentStrategy
 
-        # from the strategy object, get the actual impl of the strategy -
-        strategyImpl = strategy_object.strategy
-
         # what is predcited?
-        predicted_action = strategyImpl[(strategy_index + 1)] # why +1? our index is 1 based, no zero
+        predicted_action = _prediction(signalVector, strategy_object)
 
         # grab -
         agentPredictionArray[agent_index] = predicted_action
@@ -142,14 +150,28 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                 # let's re-rank all the strategies for this agent, and then put the new scores in an array that we can sort them
                 agentStrategyCollection = agentObject.agentStrategyCollection
                 tmp_score_array = Array{Int64,1}()
+                strategy_index = 1
                 for strategy_tuple in agentStrategyCollection
         
                     # update scores -
-                    strategy_tuple.score += -1 * sign(agentPrediction * collective_action)
+                    strategy_object = strategy_tuple.strategy
 
+                    # compute the prediction for this strategy -
+                    strategy_prediction = _prediction(signalVector, strategy_object)
+
+                    # update the score -
+                    old_score = strategy_tuple.score
+                    ΔS = -1 * sign(strategy_prediction * collective_action)
+                    new_score = old_score + ΔS
+                    strategy_tuple.score = new_score
+                    
                     # cache new score -
-                    new_score = strategy_tuple.score
                     push!(tmp_score_array, new_score)
+
+                    # output -
+                    # println("t = $(time_step_index) ai = $(agent_index) si = $(strategy_index) sp = $(strategy_prediction) ca = $(collective_action) ΔS = $(ΔS) new_score = $(new_score)")
+                    
+                    strategy_index += 1
                 end
 
                 # sort the scores -

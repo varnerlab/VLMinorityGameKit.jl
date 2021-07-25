@@ -19,11 +19,12 @@ price_array = Array{Float64,2}(undef, (numberOfTimeSteps), number_of_samples)
 
 for sample_index = 1:number_of_samples
     result = simulate(gameWorld, numberOfTimeSteps; liquidity=10.0 * numberOfTraders);
-    S = result.state
+    S = result.market_table
     P = S[!,:price]
     for time_index = 1:(numberOfTimeSteps)
         price_array[time_index,sample_index] = P[time_index]
     end
+    println("completed sample = $(sample_index)")
 end
 
 result = simulate(gameWorld, numberOfTimeSteps; liquidity=10.0 * numberOfTraders);
