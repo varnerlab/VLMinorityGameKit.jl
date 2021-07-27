@@ -1,5 +1,5 @@
 # === PRIVATE METHODS BELOW HERE ====================================================================================== #
-function _prediction(signalVector::Array{Int64,1}, strategyObject::VLMinorityGameStrategy)::Int64
+function prediction(signalVector::Array{Int64,1}, strategyObject::VLMinorityGameStrategy)::Int64
 
     # we use binary 0,1 under the covers - so lets get rid of the -1 and replace w/0 -
     memory = length(signalVector)
@@ -21,7 +21,7 @@ function _prediction(signalVector::Array{Int64,1}, strategyObject::VLMinorityGam
 end
 
 
-function _minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::Array{Int64,1})::NamedTuple
+function minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::Array{Int64,1})::NamedTuple
 
     # iniialize -
     dim_output_array = Array{Int64,1}()
@@ -39,7 +39,7 @@ function _minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::A
         strategy_object = agentObject.bestAgentStrategy
 
         # what is predcited?
-        predicted_action = _prediction(signalVector, strategy_object)
+        predicted_action = prediction(signalVector, strategy_object)
 
         # grab -
         agentPredictionArray[agent_index] = predicted_action
@@ -80,7 +80,7 @@ end
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
 function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; 
-    liquidity::Float64=10001.0, gameWorldVoteManager::Function=_minority)::NamedTuple
+    liquidity::Float64=10001.0)::NamedTuple
 
     try
 
@@ -94,6 +94,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         # initialize data structures -
         gameWorldMemoryBuffer = Array{Int64,1}()
         game_state_table = DataFrame(sell=Int[], buy=Int[], winner=Int[], A=Int[], price=Float64[])
+        agent_state_table = Array{Int,2}(undef, numberOfTimeSteps, numberOfAgents)
         logAssetPriceArray = Array{Float64,1}(undef, (numberOfTimeSteps + 1))
 
         d = Normal(0, 0.005)
@@ -118,7 +119,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
             signalVector = gameWorldMemoryBuffer[(length(gameWorldMemoryBuffer) - (agentMemorySize - 1)):end]
 
             # ok, so let's ask all the agents what they voted to do, and get data on the minority position -
-            results_tuple = gameWorldVoteManager(gameAgentArray, signalVector)
+            results_tuple = minority(gameAgentArray, signalVector)
             winning_action = results_tuple.winningAction
             collective_action = results_tuple.collectiveAction
             sell = results_tuple.sell
@@ -143,17 +144,20 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                 # what did this agent predict?
                 agentPrediction = agentPredictionArray[agent_index]
 
+                # old score -
+                old_score = agentObject.score
+                agent_state_table[time_step_index, agent_index] = old_score
+
                 # if the agent predicted correctly, then increase personal score -
                 agentObject.score += -1 * sign(agentPrediction * collective_action)
 
                 # let's re-rank all the strategies for this agent, and then put the new scores in an array that we can sort them
                 agentStrategyCollection = agentObject.agentStrategyCollection
                 tmp_score_array = Array{Int64,1}()
-                strategy_index = 1
                 for strategy_object in agentStrategyCollection
         
                     # compute the prediction for this strategy -
-                    strategy_prediction = _prediction(signalVector, strategy_object)
+                    strategy_prediction = prediction(signalVector, strategy_object)
 
                     # update the score -
                     old_score = strategy_object.score
@@ -163,12 +167,6 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                     
                     # cache new score -
                     push!(tmp_score_array, new_score)
-
-                    # println("ti = $(time_step_index) ai=$(agent_index) si = $(strategy_index) os = $(old_score) ns=$(new_score)")
-
-                    # update -
-                    # agentStrategyCollection[strategy_index] = strategy_object
-                    # strategy_index = strategy_index + 1
                 end
 
                 # sort the scores -
@@ -189,7 +187,7 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         end
 
         # return tuple -
-        return_tuple = (market_table = game_state_table, memory = gameWorldMemoryBuffer)
+        return_tuple = (market_table = game_state_table, memory = gameWorldMemoryBuffer, agent_score_table = agent_state_table)
         
         # return -
         return return_tuple
