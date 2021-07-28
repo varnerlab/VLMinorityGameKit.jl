@@ -61,6 +61,15 @@ function compute_price_return(price_array::Array{Float64,2})::Array{Float64,2}
     end
 end
 
-function compute_autocorrelation()
+function compute_autocorrelation(data_array::Array{Float64,1})::Array{Float64,1}
+
+    try
+
+        # initialize -
+        
+
+    catch error
+        rethrow(error)
+    end
 end
 # === PUBLIC METHODS ABOVE HERE ======================================================================================= #
