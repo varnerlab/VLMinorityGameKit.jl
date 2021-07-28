@@ -8,7 +8,7 @@
 
 Start of the [Julia REPL](https://docs.julialang.org/en/v1/stdlib/REPL/index.html) and enter the ``package mode`` using the ``]`` key (to get back press the ``backspace`` or ``^C`` keys). Then, at the prompt enter:
 
-    (v1.1) pkg> add VLMinorityGameKit
+    (v1.6) pkg> add VLMinorityGameKit
 
 This will install the `VLMinorityGameKit.jl` package and the other required packages. `VLMinorityGameKit.jl` requires Julia 1.6.x and above.
 `VLMinorityGameKit.jl` is open source. You can download this repository as a zip file, or clone or pull it by using the command (from the command-line):

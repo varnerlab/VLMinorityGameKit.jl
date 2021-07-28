@@ -10,6 +10,7 @@ using Plots
 using BSON
 using Distributions
 using Random
+using Test
 
 # set the seed -
 Random.seed!(Random.make_seed())
