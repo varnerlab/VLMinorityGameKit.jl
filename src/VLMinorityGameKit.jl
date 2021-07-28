@@ -19,6 +19,9 @@ export build_agent_strategy
 export build_game_agent
 export build_game_world
 
+# analysis functions -
+export compute_price_return
+
 # for debug -
 export design
 

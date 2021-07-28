@@ -75,12 +75,11 @@ function minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::Ar
     # return -
     return return_tuple
 end
-
 # === PRIVATE METHODS ABOVE HERE ====================================================================================== #
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
 function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; 
-    liquidity::Float64=10001.0)::NamedTuple
+    liquidity::Float64=10001.0, σ::Float64 = 0.0005)::NamedTuple
 
     try
 
@@ -97,7 +96,8 @@ function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         agent_state_table = Array{Int,2}(undef, numberOfTimeSteps, numberOfAgents)
         logAssetPriceArray = Array{Float64,1}(undef, (numberOfTimeSteps + 1))
 
-        d = Normal(0, 0.005)
+        # add normal to perturbation -
+        d = Normal(0, σ)
         
         # initialize -
         for _ = 1:(agentMemorySize + 1)

@@ -10,6 +10,8 @@ using Plots
 using BSON
 using Distributions
 using Random
+using StatsBase
+using Statistics
 using Test
 
 # set the seed -
@@ -19,3 +21,4 @@ Random.seed!(Random.make_seed())
 include(joinpath(_PATH_TO_BASE, "VLTypes.jl"))
 include(joinpath(_PATH_TO_BASE, "VLGameEngine.jl"))
 include(joinpath(_PATH_TO_BASE, "VLGameFactory.jl"))
+include(joinpath(_PATH_TO_BASE, "VLGameAnalysis.jl"))
