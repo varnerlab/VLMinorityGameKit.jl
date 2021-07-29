@@ -61,6 +61,7 @@ function compute_price_return(price_array::Array{Float64,2})::Array{Float64,2}
     end
 end
 
+<<<<<<< HEAD
 function compute_autocorrelation_array(price_return_vector::Array{Float64,1}, 
     lag_array::Array{Int64,1})::Array{Float64,1}
 
@@ -75,10 +76,14 @@ end
 
 function compute_autocorrelation_array(price_return_array::Array{Float64,2}, 
     lag_array::Array{Int64,1})::Array{Float64,2}
+=======
+function compute_autocorrelation(data_array::Array{Float64,1})::Array{Float64,1}
+>>>>>>> 7d24dfb8a1e96f21777288bcac4c9a24c7e12356
 
     try
 
         # initialize -
+<<<<<<< HEAD
         (number_of_steps, number_of_samples) = size(price_return_array)
         number_of_lags = length(lag_array)
         autocor_array = Array{Float64,2}(undef, number_of_lags, number_of_samples)
@@ -98,6 +103,10 @@ function compute_autocorrelation_array(price_return_array::Array{Float64,2},
 
         # return -
         return autocor_array
+=======
+        
+
+>>>>>>> 7d24dfb8a1e96f21777288bcac4c9a24c7e12356
     catch error
         rethrow(error)
     end
