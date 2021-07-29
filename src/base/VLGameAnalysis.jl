@@ -61,6 +61,45 @@ function compute_price_return(price_array::Array{Float64,2})::Array{Float64,2}
     end
 end
 
-function compute_autocorrelation()
+function compute_autocorrelation_array(price_return_vector::Array{Float64,1}, 
+    lag_array::Array{Int64,1})::Array{Float64,1}
+
+    try
+
+        # return -
+        return autocor(price_return_vector, lag_array)
+    catch error
+        rethrow(error)
+    end
+end
+
+function compute_autocorrelation_array(price_return_array::Array{Float64,2}, 
+    lag_array::Array{Int64,1})::Array{Float64,2}
+
+    try
+
+        # initialize -
+        (number_of_steps, number_of_samples) = size(price_return_array)
+        number_of_lags = length(lag_array)
+        autocor_array = Array{Float64,2}(undef, number_of_lags, number_of_samples)
+
+        # process each sample -
+        for sample_index = 1:number_of_samples
+            
+            # data -
+            data_col = price_return_array[:, sample_index]
+            local_autocor_array = compute_autocorrelation_array(data_col, lag_array)
+        
+            # package -
+            for lag_index = 1:number_of_lags
+                autocor_array[lag_index, sample_index] = local_autocor_array[lag_index]
+            end
+        end
+
+        # return -
+        return autocor_array
+    catch error
+        rethrow(error)
+    end
 end
 # === PUBLIC METHODS ABOVE HERE ======================================================================================= #

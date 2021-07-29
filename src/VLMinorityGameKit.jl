@@ -21,6 +21,7 @@ export build_game_world
 
 # analysis functions -
 export compute_price_return
+export compute_autocorrelation_array
 
 # for debug -
 export design
