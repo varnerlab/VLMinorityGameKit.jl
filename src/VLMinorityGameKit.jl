@@ -14,7 +14,7 @@ export VLMinorityGameAgent
 export VLMinorityGameStrategy
 
 # methods -
-export simulate
+export basic
 export build_agent_strategy
 export build_game_agent
 export build_game_world

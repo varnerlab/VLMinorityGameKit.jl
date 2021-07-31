@@ -78,7 +78,7 @@ end
 # === PRIVATE METHODS ABOVE HERE ====================================================================================== #
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
-function simulate(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; 
+function basic(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; 
     liquidity::Float64=10001.0, σ::Float64 = 0.0005)::NamedTuple
 
     try
