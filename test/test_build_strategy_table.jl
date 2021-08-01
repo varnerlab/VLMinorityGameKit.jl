@@ -4,4 +4,4 @@ using VLMinorityGameKit
 memory = 3
 
 # make call -
-strategy_object = build_agent_strategy(memory)
+strategy_object = build_basic_agent_strategy(memory)

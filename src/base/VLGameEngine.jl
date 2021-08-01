@@ -1,5 +1,5 @@
 # === PRIVATE METHODS BELOW HERE ====================================================================================== #
-function prediction(signalVector::Array{Int64,1}, strategyObject::VLMinorityGameStrategy)::Int64
+function prediction(signalVector::Array{Int64,1}, strategyObject::VLBasicMinorityGameStrategy)::Int64
 
     # we use binary 0,1 under the covers - so lets get rid of the -1 and replace w/0 -
     memory = length(signalVector)
@@ -21,7 +21,7 @@ function prediction(signalVector::Array{Int64,1}, strategyObject::VLMinorityGame
 end
 
 
-function minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::Array{Int64,1})::NamedTuple
+function minority(gameAgentArray::Array{VLBasicMinorityGameAgent,1}, signalVector::Array{Int64,1})::NamedTuple
 
     # iniialize -
     dim_output_array = Array{Int64,1}()
@@ -69,7 +69,23 @@ end
 # === PRIVATE METHODS ABOVE HERE ====================================================================================== #
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
-function basic(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; 
+function execute_grand_cannonical_game()::NamedTuple
+
+    try
+    catch error
+        rethrow(error)
+    end
+end
+
+function execute_thermal_game()::NamedTuple
+
+    try
+    catch error
+        rethrow(error)
+    end
+end
+
+function execute_basic_game(worldObject::VLBasicMinorityGameWorld, numberOfTimeSteps::Int64; 
     voteManagerFunction::Function = minority, predictionFuntion::Function = prediction,
     liquidity::Float64=10001.0, σ::Float64 = 0.0005)::NamedTuple
 

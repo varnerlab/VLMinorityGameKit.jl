@@ -9,15 +9,17 @@ export VLAbstractGameWorld
 export VLAbstractGameAgent
 export VLAbstractGameStrategy
 
-export VLMinorityGameWorld
-export VLMinorityGameAgent
-export VLMinorityGameStrategy
+export VLBasicMinorityGameWorld
+export VLBasicMinorityGameAgent
+export VLBasicMinorityGameStrategy
 
 # methods -
-export basic
-export build_agent_strategy
-export build_game_agent
-export build_game_world
+export execute_basic_game
+export execute_thermal_game
+export execute_grand_cannonical_game
+export build_basic_agent_strategy
+export build_basic_game_agent
+export build_basic_game_world
 
 # analysis functions -
 export compute_price_return

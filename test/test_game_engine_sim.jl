@@ -22,7 +22,7 @@ function run_test(a)
     simulation_result_array = Array{DataFrame,1}(undef, number_of_samples)
 
     for sample_index = 1:number_of_samples
-        result = basic(gameWorld, numberOfTimeSteps; liquidity=3.0 * numberOfTraders);
+        result = execute_basic_game(gameWorld, numberOfTimeSteps; liquidity=3.0 * numberOfTraders);
         simulation_result_array[sample_index] = result.market_table
         println("Completed sample = $(sample_index) ...")
     end

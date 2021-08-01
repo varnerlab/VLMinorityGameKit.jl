@@ -18,7 +18,7 @@ end
 
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
-function build_agent_strategy(memory::Int64, score::Int64)::VLMinorityGameStrategy
+function build_basic_agent_strategy(memory::Int64, score::Int64)::VLBasicMinorityGameStrategy
 
     try
 
@@ -39,37 +39,39 @@ function build_agent_strategy(memory::Int64, score::Int64)::VLMinorityGameStrate
         end
 
         # return -
-        return VLMinorityGameStrategy(outcome_vector, score)  # default: score = 0 strategy
+        return VLBasicMinorityGameStrategy(outcome_vector, score)  # default: score = 0 strategy
     catch error
         rethrow(error)
     end
 end
 
-function build_game_agent(numberOfStrategiesPerAgent::Int64, agentMemorySize::Int64)::VLMinorityGameAgent
+function build_basic_game_agent(numberOfStrategiesPerAgent::Int64, 
+    agentMemorySize::Int64)::VLBasicMinorityGameAgent
 
     try
 
         # build a collection of strategies for this agent -
         # each agent is going to need numberOfStrategiesPerAgent strategies 
-        local_strategy_cache = Array{VLMinorityGameStrategy,1}(undef, numberOfStrategiesPerAgent)
+        local_strategy_cache = Array{VLBasicMinorityGameStrategy,1}(undef, numberOfStrategiesPerAgent)
         for strategy_index = 1:numberOfStrategiesPerAgent
             
             # build the strategy - initially all strategies will have a score of zero -
-            strategy = build_agent_strategy(agentMemorySize, 0)
+            strategy = build_basic_agent_strategy(agentMemorySize, 0)
 
             # package -
             local_strategy_cache[strategy_index] = strategy
         end
 
         # build agent object - use the first strategy as the best -
-        return VLMinorityGameAgent(local_strategy_cache; bestStrategy=first(local_strategy_cache))
+        return VLBasicMinorityGameAgent(local_strategy_cache; bestStrategy=first(local_strategy_cache))
     catch error
         # just rethrow the error for now ...
         rethrow(error)
     end
 end
 
-function build_game_world(numberOfAgents::Int64, agentMemorySize::Int64, numberOfStrategiesPerAgent::Int64)::VLMinorityGameWorld
+function build_basic_game_world(numberOfAgents::Int64, agentMemorySize::Int64, 
+    numberOfStrategiesPerAgent::Int64)::VLBasicMinorityGameWorld
 
     try
 
@@ -79,7 +81,7 @@ function build_game_world(numberOfAgents::Int64, agentMemorySize::Int64, numberO
         # gameAgentArray::Array{VLMinorityGameAgent,1}
 
         # iniialize -
-        gameAgentArray = Array{VLMinorityGameAgent,1}(undef, numberOfAgents)
+        gameAgentArray = Array{VLBasicMinorityGameAgent,1}(undef, numberOfAgents)
 
         # we have two of the three, lets create an array of game agents -
         for agent_index = 1:numberOfAgents
@@ -87,14 +89,14 @@ function build_game_world(numberOfAgents::Int64, agentMemorySize::Int64, numberO
             println("Building agent $(agent_index) of $(numberOfAgents)")
 
             # create an agent -
-            agent = build_game_agent(numberOfStrategiesPerAgent, agentMemorySize)
+            agent = build_basic_game_agent(numberOfStrategiesPerAgent, agentMemorySize)
 
             # package -
             gameAgentArray[agent_index] = agent
         end
 
         # build the game world -
-        return VLMinorityGameWorld(numberOfAgents, agentMemorySize, gameAgentArray)
+        return VLBasicMinorityGameWorld(numberOfAgents, agentMemorySize, gameAgentArray)
     catch error
         # just rethrow the error for now ...
         rethrow(error)
