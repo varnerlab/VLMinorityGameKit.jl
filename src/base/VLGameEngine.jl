@@ -60,17 +60,8 @@ function minority(gameAgentArray::Array{VLMinorityGameAgent,1}, signalVector::Ar
     minority_action_value = actions[arg_min_index]
     collective_action = sum(agentPredictionArray)
 
-    # introduce some randomness: oops, we pick the majoity 1% of the time by mistake 
-    bias_value = rand()
-    if (bias_value <= 0.95)
-        
-        # setup the return tuple -
-        return_tuple = (winningAction = minority_action_value, sell = dim_output_array[1], buy = dim_output_array[2], collectiveAction = collective_action, agentActions = agentPredictionArray)
-    else
-        
-        # ooops - we made a mistake. the majority wins ..
-        return_tuple = (winningAction = -1 * minority_action_value, sell = dim_output_array[1], buy = dim_output_array[2], collectiveAction = collective_action, agentActions = agentPredictionArray)
-    end
+    # setup the return tuple -
+    return_tuple = (winningAction = minority_action_value, sell = dim_output_array[1], buy = dim_output_array[2], collectiveAction = collective_action, agentActions = agentPredictionArray)
 
     # return -
     return return_tuple
@@ -79,6 +70,7 @@ end
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
 function basic(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64; 
+    voteManagerFunction::Function = minority, predictionFuntion::Function = prediction,
     liquidity::Float64=10001.0, σ::Float64 = 0.0005)::NamedTuple
 
     try
@@ -91,7 +83,7 @@ function basic(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         length_of_actions = length(actions)   
 
         # initialize data structures -
-        gameWorldMemoryBuffer = Array{Int64,1}()
+        gameWorldMemoryBuffer = CircularBuffer{Int64}(agentMemorySize)
         game_state_table = DataFrame(sell=Int[], buy=Int[], winner=Int[], A=Int[], price=Float64[])
         agent_state_table = Array{Int,2}(undef, numberOfTimeSteps, numberOfAgents)
         logAssetPriceArray = Array{Float64,1}(undef, (numberOfTimeSteps + 1))
@@ -119,7 +111,7 @@ function basic(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
             signalVector = gameWorldMemoryBuffer[(length(gameWorldMemoryBuffer) - (agentMemorySize - 1)):end]
 
             # ok, so let's ask all the agents what they voted to do, and get data on the minority position -
-            results_tuple = minority(gameAgentArray, signalVector)
+            results_tuple = voteManagerFunction(gameAgentArray, signalVector)
             winning_action = results_tuple.winningAction
             collective_action = results_tuple.collectiveAction
             sell = results_tuple.sell
@@ -157,7 +149,7 @@ function basic(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                 for strategy_object in agentStrategyCollection
         
                     # compute the prediction for this strategy -
-                    strategy_prediction = prediction(signalVector, strategy_object)
+                    strategy_prediction = predictionFuntion(signalVector, strategy_object)
 
                     # update the score -
                     old_score = strategy_object.score
@@ -172,14 +164,8 @@ function basic(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
                 # sort the scores -
                 idx_sort_score = sortperm(tmp_score_array)
 
-                # @show tmp_score_array
-                # println("ai=$(agent_index) new best index = $(last(idx_sort_score))")
-
                 # ok, so grab the best strategy, and update the best strategy pointer 
                 agentObject.bestAgentStrategy = agentStrategyCollection[last(idx_sort_score)]
-                
-                # lets cache the wealth -
-                # agentWealthCache[agent_index, time_step_index + 1] = agentObject.wealth
             end
 
             # add the winning outcome to the system memory -
@@ -187,7 +173,7 @@ function basic(worldObject::VLMinorityGameWorld, numberOfTimeSteps::Int64;
         end
 
         # return tuple -
-        return_tuple = (market_table = game_state_table, memory = gameWorldMemoryBuffer, agent_score_table = agent_state_table)
+        return_tuple = (market_table = game_state_table, agent_score_table = agent_state_table)
         
         # return -
         return return_tuple

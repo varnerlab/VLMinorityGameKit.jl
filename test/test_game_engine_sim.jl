@@ -2,9 +2,8 @@ using VLMinorityGameKit
 using BSON
 using Plots
 using DataFrames
-using Debugger
 
-function run_test()
+function run_test(a)
 
     # setup -
     # path_to_game_world = "/Users/jeffreyvarner/Desktop/julia_work/VLMinorityGameKit.jl/test/data/GW-M10-S5-NA1001.bson"
@@ -45,3 +44,5 @@ function run_test()
     println("Simulation is finished .... enjoy.")
 
 end
+
+run_test(0)

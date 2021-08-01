@@ -52,5 +52,5 @@ L3_return_array = compute_return_array(path_to_sim_data_file)
 # test the autocorrelation -
 (number_of_timesteps, number_of_samples) = size(L3_return_array)
 lag_array = range(0,stop=(number_of_timesteps - 1),step=1) |> collect
-acr = compute_autocorrelation_array(L3_return_array[:,3], lag_array)
+acr = compute_autocorrelation_array(L3_return_array[:,2], lag_array)
 

@@ -13,7 +13,7 @@ using Random
 using StatsBase
 using Statistics
 using Test
-using Debugger
+using DataStructures
 
 # set the seed -
 Random.seed!(Random.make_seed())
