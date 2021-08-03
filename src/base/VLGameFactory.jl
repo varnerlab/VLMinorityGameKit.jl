@@ -14,11 +14,10 @@ function design(n::Int64)
     # return -
     return bitStringArray
 end
-# === PRIVATE METHODS ABOVE HERE ====================================================================================== #
 
-
-# === PUBLIC METHODS BELOW HERE ======================================================================================= #
-function build_basic_agent_strategy(memory::Int64, score::Int64)::VLBasicMinorityGameStrategy
+# ---------------------------------------------------------------------------------------------------- #
+# basic -
+function _build_basic_agent_strategy(memory::Int64, score::Int64)::VLBasicMinorityGameStrategy
 
     try
 
@@ -45,7 +44,7 @@ function build_basic_agent_strategy(memory::Int64, score::Int64)::VLBasicMinorit
     end
 end
 
-function build_basic_game_agent(numberOfStrategiesPerAgent::Int64, 
+function _build_basic_game_agent(numberOfStrategiesPerAgent::Int64, 
     agentMemorySize::Int64)::VLBasicMinorityGameAgent
 
     try
@@ -56,7 +55,7 @@ function build_basic_game_agent(numberOfStrategiesPerAgent::Int64,
         for strategy_index = 1:numberOfStrategiesPerAgent
             
             # build the strategy - initially all strategies will have a score of zero -
-            strategy = build_basic_agent_strategy(agentMemorySize, 0)
+            strategy = _build_basic_agent_strategy(agentMemorySize, 0)
 
             # package -
             local_strategy_cache[strategy_index] = strategy
@@ -70,8 +69,7 @@ function build_basic_game_agent(numberOfStrategiesPerAgent::Int64,
     end
 end
 
-function build_basic_game_world(numberOfAgents::Int64, agentMemorySize::Int64, 
-    numberOfStrategiesPerAgent::Int64)::VLBasicMinorityGameWorld
+function _build_basic_game_world(kwargs_dictionary::Dict)
 
     try
 
@@ -79,6 +77,11 @@ function build_basic_game_world(numberOfAgents::Int64, agentMemorySize::Int64,
         # numberOfAgents::Int64
         # agentMemorySize::Int64
         # gameAgentArray::Array{VLMinorityGameAgent,1}
+
+        # get data from the args -
+        numberOfAgents = kwargs_dictionary[:numberOfAgents]
+        agentMemorySize = kwargs_dictionary[:memory]
+        numberOfStrategiesPerAgent = kwargs_dictionary[:numberOfStrategiesPerAgent]
 
         # iniialize -
         gameAgentArray = Array{VLBasicMinorityGameAgent,1}(undef, numberOfAgents)
@@ -88,11 +91,8 @@ function build_basic_game_world(numberOfAgents::Int64, agentMemorySize::Int64,
 
             println("Building agent $(agent_index) of $(numberOfAgents)")
 
-            # create an agent -
-            agent = build_basic_game_agent(numberOfStrategiesPerAgent, agentMemorySize)
-
             # package -
-            gameAgentArray[agent_index] = agent
+            gameAgentArray[agent_index] = _build_basic_game_agent(numberOfStrategiesPerAgent, agentMemorySize)
         end
 
         # build the game world -
@@ -102,4 +102,142 @@ function build_basic_game_world(numberOfAgents::Int64, agentMemorySize::Int64,
         rethrow(error)
     end
 end
+# ---------------------------------------------------------------------------------------------------- #
+
+# ---------------------------------------------------------------------------------------------------- #
+# thermal -
+function _build_thermal_agent_strategy(memory::Int64, score::Int64, probability::Float64)::VLThermalMinorityGameStrategy
+
+    try
+        
+        # initialize -
+        actions = [-1,1]
+        size_of_alphabet = length(actions)
+        number_of_elements = (size_of_alphabet)^memory
+        outcome_vector = Array{Int,1}(undef, number_of_elements)
+        
+        # generate an outcome vector -
+        for index = 1:number_of_elements
+            
+            # generate an index -
+            r_index = rand(1:2)
+
+            # outcome -
+            outcome_vector[index] = actions[r_index]
+        end
+
+        # return -
+        return VLThermalMinorityGameStrategy(outcome_vector, score, probability)  # default: score = 0 strategy
+    catch error
+        rethrow(error)
+    end
+end
+
+function _build_thermal_game_agent(numberOfStrategiesPerAgent::Int64, agentMemorySize::Int64)::VLThermalMinorityGameAgent
+
+    try
+    
+        # initialize -
+        probability = (1.0/numberOfStrategiesPerAgent)
+
+        # ok, let's build the collection of strategies for this agent, and the ranking array -
+        strategyCollection = Array{VLThermalMinorityGameStrategy,1}(undef, numberOfStrategiesPerAgent)
+        strategyRankArray = Array{Float64,1}(undef, numberOfStrategiesPerAgent)
+        for strategy_index = 1:numberOfStrategiesPerAgent
+            
+            # setup -
+            strategyRankArray[strategy_index] = probability
+
+            # build a strategy -
+            strategyCollection[strategy_index] = _build_thermal_agent_strategy(agentMemorySize, 0, probability)            
+        end
+
+        # return -
+        return VLThermalMinorityGameAgent(strategyCollection, strategyRankArray, 0)
+    catch error
+        rethrow(error)
+    end
+end
+
+function _build_thermal_game_world(kwargs_dictionary::Dict)::VLThermalMinorityGameWorld
+
+    try
+
+        # initialize -
+        numberOfAgents = kwargs_dictionary[:numberOfAgents]
+        agentMemorySize = kwargs_dictionary[:memory]
+        numberOfStrategiesPerAgent = kwargs_dictionary[:numberOfStrategiesPerAgent]
+        temperatute = kwargs_dictionary[:temperature]
+
+        # build an array of game agents -
+        agentArray = Array{VLThermalMinorityGameAgent,1}(undef, numberOfAgents)
+        for agent_index = 1:numberOfAgents
+
+            # build agents, package -
+            agentArray[agent_index] = _build_thermal_game_agent(numberOfStrategiesPerAgent, agentMemorySize)
+        end
+
+        # build -
+        return VLThermalMinorityGameWorld(agentArray, numberOfAgents, agentMemorySize, temperatute)
+    catch error
+        rethrow(error)
+    end
+end
+# ---------------------------------------------------------------------------------------------------- #
+
+# ---------------------------------------------------------------------------------------------------- #
+# grand cannonical -
+function _build_gc_agent_strategy(memory::Int64, score::Int64)::VLGCMinorityGameStrategy
+
+    try
+    catch error
+        rethrow(error)
+    end
+end
+
+function _build_gc_game_agent(numberOfStrategiesPerAgent::Int64, 
+    agentMemorySize::Int64, temperatute::Float64)::VLGCMinorityGameAgent
+
+    try
+    catch error
+        rethrow(error)
+    end
+end
+
+function _build_gc_game_world(kwargs_dictionary::Dict)::VLGCMinorityGameWorld
+
+    try
+    catch error
+        rethrow(error)
+    end
+end
+# ---------------------------------------------------------------------------------------------------- #
+
+# === PRIVATE METHODS ABOVE HERE ====================================================================================== #
+
+
+# === PUBLIC METHODS BELOW HERE ======================================================================================= #
+
+# generic -
+function build_minority_game_world(game::Union{Type{VLBasicMinorityGameWorld},Type{VLThermalMinorityGameWorld},Type{VLGCMinorityGameWorld}}; 
+    kwargs...) 
+
+    try
+
+        # initialize -
+        kwargs_dictionary = Dict(kwargs)
+        function_dictionarty = Dict()
+
+        # setup function dictionary -
+        function_dictionarty[VLBasicMinorityGameWorld] = _build_basic_game_world
+        function_dictionarty[VLThermalMinorityGameWorld] = _build_thermal_game_world
+        function_dictionarty[VLGCMinorityGameWorld] = _build_gc_game_world
+
+        # ok, call the linked function -
+        return function_dictionarty[game](kwargs_dictionary)
+    catch error
+        rethrow(error)
+    end
+end
+
 # === PUBLIC METHODS ABOVE HERE ======================================================================================= #

@@ -13,13 +13,17 @@ export VLBasicMinorityGameWorld
 export VLBasicMinorityGameAgent
 export VLBasicMinorityGameStrategy
 
+export VLThermalMinorityGameWorld
+export VLThermalMinorityGameAgent
+export VLThermalMinorityGameStrategy
+
+export VLGCMinorityGameStrategy
+export VLGCMinorityGameAgent
+export VLGCMinorityGameWorld
+
 # methods -
-export execute_basic_game
-export execute_thermal_game
-export execute_grand_cannonical_game
-export build_basic_agent_strategy
-export build_basic_game_agent
-export build_basic_game_world
+export execute
+export build_minority_game_world
 
 # analysis functions -
 export compute_price_return

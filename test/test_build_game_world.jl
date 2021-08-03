@@ -12,7 +12,7 @@ path_to_game_world = "/Users/jeffreyvarner/Desktop/julia_work/VLMinorityGameKit.
 
 # build the game world -
 # args: numberOfAgents::Int64, agentMemorySize::Int64, numberOfStrategiesPerAgent::Int64; actions::Array{Int64,1} = [-1,0,1]
-game_world = build_basic_game_world(numberOfAgents, memory, numberOfStrategiesPerAgent)
+game_world = build_minority_game_world(VLBasicMinorityGameWorld; numberOfAgents, memory, numberOfStrategiesPerAgent)
 
 # write the gameworld to disk -
 bson(path_to_game_world, gameworld=game_world)

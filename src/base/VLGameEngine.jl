@@ -1,5 +1,5 @@
 # === PRIVATE METHODS BELOW HERE ====================================================================================== #
-function prediction(signalVector::Array{Int64,1}, strategyObject::VLBasicMinorityGameStrategy)::Int64
+function _basic_prediction(signalVector::Array{Int64,1}, strategyObject::VLBasicMinorityGameStrategy)::Int64
 
     # we use binary 0,1 under the covers - so lets get rid of the -1 and replace w/0 -
     memory = length(signalVector)
@@ -21,7 +21,7 @@ function prediction(signalVector::Array{Int64,1}, strategyObject::VLBasicMinorit
 end
 
 
-function minority(gameAgentArray::Array{VLBasicMinorityGameAgent,1}, signalVector::Array{Int64,1})::NamedTuple
+function _basic_minority(gameAgentArray::Array{VLBasicMinorityGameAgent,1}, signalVector::Array{Int64,1})::NamedTuple
 
     # iniialize -
     dim_output_array = Array{Int64,1}()
@@ -39,7 +39,7 @@ function minority(gameAgentArray::Array{VLBasicMinorityGameAgent,1}, signalVecto
         strategy_object = agentObject.bestAgentStrategy
 
         # what is predcited?
-        predicted_action = prediction(signalVector, strategy_object)
+        predicted_action = _basic_prediction(signalVector, strategy_object)
 
         # grab -
         agentPredictionArray[agent_index] = predicted_action
@@ -66,27 +66,138 @@ function minority(gameAgentArray::Array{VLBasicMinorityGameAgent,1}, signalVecto
     # return -
     return return_tuple
 end
+
+function _thermal_minority()
+end
+
+function _thermal_prediction()
+end
+
+function _thermal_cooling_function(temperature::Float64)
+    
+    # default behavior -
+    α = 0.9
+    temperature =  α * temperature
+    return temperature
+end
+
 # === PRIVATE METHODS ABOVE HERE ====================================================================================== #
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
-function execute_grand_cannonical_game()::NamedTuple
+function execute(worldObject::VLThermalMinorityGameWorld, numberOfTimeSteps::Int64; 
+    voteManagerFunction::Function = _thermal_minority, predictionFuntion::Function = _thermal_prediction,
+    coolingFunction::Function = _thermal_cooling_function, temperatureMinimum::Float64=0.1, 
+    liquidity::Float64=10001.0, σ::Float64 = 0.0005)::VLMinorityGameSimulationResults
 
     try
+
+        # get parameters from the gameworld -
+        temperature = worldObject.temperature
+        numberOfAgents = worldObject.numberOfAgents
+        agentMemorySize = worldObject.agentMemorySize
+        gameAgentArray = worldObject.gameAgentArray
+
+        # actions -
+        actions = [-1,1]    # we always use the binary model 
+        length_of_actions = length(actions)  
+
+        # initialize data structures -
+        gameWorldMemoryBuffer = CircularBuffer{Int64}(agentMemorySize)
+        game_state_table = DataFrame(sell=Int[], buy=Int[], winner=Int[], A=Int[], price=Float64[])
+        agent_state_table = Array{Int,2}(undef, numberOfTimeSteps, numberOfAgents)
+        logAssetPriceArray = Array{Float64,1}(undef, (numberOfTimeSteps + 1))
+
+        # initialze gameWorldMemoryBuffer -
+        r = rand(1:length_of_actions, (agentMemorySize + 1))
+        [x -> push!(gameWorldMemoryBuffer, actions[r[x]]) for x = 1:(agentMemorySize + 1)]
+        
+        # initially asset price is 1.0 -
+        logAssetPriceArray[1] = 1.0
+
+        # main run loop -
+        # outer loop: we repeat this loop while T > T_min
+        while (temperature>temperatureMinimum)
+
+            # lets define the beta -
+            β = (1/temperature)
+            
+            # inner loop: we repeat this loop for 1 -> numberOfTimeSteps
+            for time_step_index = 1:numberOfTimeSteps
+                
+                # grab the last agentMemorySize block -
+                signalVector = gameWorldMemoryBuffer[(length(gameWorldMemoryBuffer) - (agentMemorySize - 1)):end]
+
+                # ok, so let's ask all the agents what they voted to do, and get data on the minority position -
+                results_tuple = voteManagerFunction(gameAgentArray, signalVector)
+                winning_action = results_tuple.winningAction
+                collective_action = results_tuple.collectiveAction
+                sell = results_tuple.sell
+                buy = results_tuple.buy
+                agentPredictionArray = results_tuple.agentActions
+
+                # update the price -
+                old_price = logAssetPriceArray[time_step_index]
+                r = ((1 / liquidity) * collective_action) + rand(d)
+                logAssetPriceArray[time_step_index + 1] = old_price * (exp(r))
+
+                # update the agents data with the winning outcome -
+                for agent_index = 1:numberOfAgents
+                
+                    # grab the agent -
+                    agentObject = gameAgentArray[agent_index]
+
+                    # what did this agent predict?
+                    agentPrediction = agentPredictionArray[agent_index]
+
+                    # capture the current score, then update -
+                    # if the agent predicted correctly, then increase personal score -
+                    agent_state_table[time_step_index, agent_index] = agentObject.score
+                    agentObject.score += -1 * sign(agentPrediction * collective_action)
+
+                    # so now we need to compute the probabaility for each strategy for this 
+                    # agent -
+                    agentStrategyCollection = agentObject.agentStrategyCollection
+                    factor_array = Array{Float64,1}()
+                    for strategy_object in agentStrategyCollection
+                        
+                        # update the score for this strategy -
+                        strategy_prediction = predictionFuntion(signalVector, strategy_object)
+
+                        # update the score -
+                        strategy_object.score += -1 * sign(strategy_prediction * collective_action)
+
+                        # compute the factors -
+                        factorVal = exp(-1*β*strategy_object.score)
+                        push!(factor_array, factorVal)
+                    end
+
+                    # ok, so know that we that updated scores, lets compute the facrors -
+                    numberOfStrategiesPerAgent = length(agentStrategyCollection)
+                    denom_value = sum(factor_array)
+                    strategyRankArray = agentObject.strategyRankArray
+                    for agent_strategy_index = 1:numberOfStrategiesPerAgent
+                        strategyRankArray[agent_strategy_index] = factor_array[agent_strategy_index]/denom_value
+                    end
+                end # end agent update for loop 
+
+                # populate state table -
+                data_row = [sell, buy, winning_action, collective_action, logAssetPriceArray[time_step_index]]
+                push!(game_state_table, data_row)
+            
+            end # end time for loop
+
+            # after each time range, update the temperature using the cooling function 
+            temperature = coolingFunction(temperature)
+    
+        end # end Temp while loop
+
     catch error
         rethrow(error)
     end
 end
 
-function execute_thermal_game()::NamedTuple
-
-    try
-    catch error
-        rethrow(error)
-    end
-end
-
-function execute_basic_game(worldObject::VLBasicMinorityGameWorld, numberOfTimeSteps::Int64; 
-    voteManagerFunction::Function = minority, predictionFuntion::Function = prediction,
+function execute(worldObject::VLBasicMinorityGameWorld, numberOfTimeSteps::Int64; 
+    voteManagerFunction::Function = _basic_minority, predictionFuntion::Function = _basic_prediction,
     liquidity::Float64=10001.0, σ::Float64 = 0.0005)::NamedTuple
 
     try
@@ -139,10 +250,6 @@ function execute_basic_game(worldObject::VLBasicMinorityGameWorld, numberOfTimeS
             r = ((1 / liquidity) * collective_action) + rand(d)
             logAssetPriceArray[time_step_index + 1] = old_price * (exp(r))
 
-            # populate state table -
-            data_row = [sell, buy, winning_action, collective_action, logAssetPriceArray[time_step_index]]
-            push!(game_state_table, data_row)
-
             # update the agents data with the winning outcome -
             for agent_index = 1:numberOfAgents
                 
@@ -186,6 +293,10 @@ function execute_basic_game(worldObject::VLBasicMinorityGameWorld, numberOfTimeS
 
             # add the winning outcome to the system memory -
             push!(gameWorldMemoryBuffer, winning_action)
+
+            # populate state table -
+            data_row = [sell, buy, winning_action, collective_action, logAssetPriceArray[time_step_index]]
+            push!(game_state_table, data_row)
         end
 
         # return tuple -
