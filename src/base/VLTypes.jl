@@ -6,7 +6,8 @@ abstract type VLAbstractGameStrategy end
 
 # ----------------------------------------------------------------------------- #
 # General -
-struct VLMinorityGameSimulationResults
+struct VLMinorityGameSimulationResult
+    data::Union{Nothing, DataFrame}
 end
 # ----------------------------------------------------------------------------- #
 

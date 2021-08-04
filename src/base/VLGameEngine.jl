@@ -20,7 +20,6 @@ function _basic_prediction(signalVector::Array{Int64,1}, strategyObject::VLBasic
     return strategyImpl[strategy_index + 1]
 end
 
-
 function _basic_minority(gameAgentArray::Array{VLBasicMinorityGameAgent,1}, signalVector::Array{Int64,1})::NamedTuple
 
     # iniialize -
@@ -67,10 +66,53 @@ function _basic_minority(gameAgentArray::Array{VLBasicMinorityGameAgent,1}, sign
     return return_tuple
 end
 
-function _thermal_minority()
-end
+function _thermal_minority(gameAgentArray::Array{VLBasicMinorityGameAgent,1}, 
+    signalVector::Array{Int64,1})::NamedTuple
 
-function _thermal_prediction()
+    # iniialize -
+    dim_output_array = Array{Int64,1}()
+    numberOfAgents = length(gameAgentArray)
+    actions = [-1,1]
+
+    # ask the agents what their prediction will be, given this signal vector -
+    agentPredictionArray = Array{Int64,1}(undef, numberOfAgents)
+    for agent_index = 1:numberOfAgents
+                
+        # grab the agent -
+        agentObject = gameAgentArray[agent_index]
+
+        # ok, so the agent needs to select a strategy -
+        # get the strategy rank table 
+        strategyRankArray = agentObject.strategyRankArray
+
+
+        # what is predcited?
+        predicted_action = _basic_prediction(signalVector, strategy_object)
+
+        # grab -
+        agentPredictionArray[agent_index] = predicted_action
+    end
+
+    # process each element of the alphabet -
+    for value in actions
+        
+        # number of items -
+        number_of_values = length(findall(x -> x == value, agentPredictionArray)) 
+
+        # grab -
+        push!(dim_output_array, number_of_values)
+    end
+
+    # find the argmin -
+    arg_min_index = argmin(dim_output_array)
+    minority_action_value = actions[arg_min_index]
+    collective_action = sum(agentPredictionArray)
+
+    # setup the return tuple -
+    return_tuple = (winningAction = minority_action_value, sell = dim_output_array[1], buy = dim_output_array[2], collectiveAction = collective_action, agentActions = agentPredictionArray)
+
+    # return -
+    return return_tuple
 end
 
 function _thermal_cooling_function(temperature::Float64)
@@ -85,9 +127,9 @@ end
 
 # === PUBLIC METHODS BELOW HERE ======================================================================================= #
 function execute(worldObject::VLThermalMinorityGameWorld, numberOfTimeSteps::Int64; 
-    voteManagerFunction::Function = _thermal_minority, predictionFuntion::Function = _thermal_prediction,
+    voteManagerFunction::Function = _thermal_minority, predictionFuntion::Function = _basic_prediction,
     coolingFunction::Function = _thermal_cooling_function, temperatureMinimum::Float64=0.1, 
-    liquidity::Float64=10001.0, σ::Float64 = 0.0005)::VLMinorityGameSimulationResults
+    liquidity::Float64=10001.0, σ::Float64 = 0.0005)::VLMinorityGameSimulationResult
 
     try
 
@@ -103,7 +145,7 @@ function execute(worldObject::VLThermalMinorityGameWorld, numberOfTimeSteps::Int
 
         # initialize data structures -
         gameWorldMemoryBuffer = CircularBuffer{Int64}(agentMemorySize)
-        game_state_table = DataFrame(sell=Int[], buy=Int[], winner=Int[], A=Int[], price=Float64[])
+        game_state_table = DataFrame(temperature=Float64[], sell=Int[], buy=Int[], winner=Int[], A=Int[], price=Float64[])
         agent_state_table = Array{Int,2}(undef, numberOfTimeSteps, numberOfAgents)
         logAssetPriceArray = Array{Float64,1}(undef, (numberOfTimeSteps + 1))
 
@@ -181,15 +223,17 @@ function execute(worldObject::VLThermalMinorityGameWorld, numberOfTimeSteps::Int
                 end # end agent update for loop 
 
                 # populate state table -
-                data_row = [sell, buy, winning_action, collective_action, logAssetPriceArray[time_step_index]]
+                data_row = [temperature, sell, buy, winning_action, collective_action, logAssetPriceArray[time_step_index]]
                 push!(game_state_table, data_row)
             
             end # end time for loop
 
             # after each time range, update the temperature using the cooling function 
             temperature = coolingFunction(temperature)
-    
         end # end Temp while loop
+
+        # package up and return -
+        return VLMinorityGameSimulationResult(game_state_table)
 
     catch error
         rethrow(error)

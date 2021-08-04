@@ -21,6 +21,8 @@ export VLGCMinorityGameStrategy
 export VLGCMinorityGameAgent
 export VLGCMinorityGameWorld
 
+export VLMinorityGameSimulationResult
+
 # methods -
 export execute
 export build_minority_game_world
