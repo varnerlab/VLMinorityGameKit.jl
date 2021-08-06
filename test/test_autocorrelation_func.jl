@@ -46,7 +46,7 @@ function compute_return_array(path_to_sim_data_file::String)::Array{Float64,2}
 end
 
 # path to simulation file -
-path_to_sim_data_file = "/Users/jeffreyvarner/Desktop/julia_work/VLMinorityGameKit.jl/test/data/results/SIM-M10-S5-NA1001-L3.bson"
+path_to_sim_data_file = "/Users/jeffreyvarner/Desktop/julia_work/VLMinorityGameKit.jl/test/data/results/SIM-T-M10-S5-NA1001-L3.bson"
 L3_return_array = compute_return_array(path_to_sim_data_file)
 
 # test the autocorrelation -

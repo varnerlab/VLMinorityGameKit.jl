@@ -81,15 +81,17 @@ function _thermal_minority(gameAgentArray::Array{VLThermalMinorityGameAgent,1},
         # grab the agent -
         agentObject = gameAgentArray[agent_index]
 
-        # roll a rand number -
-        r = rand()
-
         # Pick a strategy -
         agentStrategyCollection = agentObject.agentStrategyCollection
         strategy_probability_array = Array{Float64,1}()
+        strategy_score_array = Array{Int64,1}()
         for strategy_object in agentStrategyCollection
             push!(strategy_probability_array, strategy_object.probability)
-        end        
+            push!(strategy_score_array, strategy_object.score)
+        end      
+
+        # roll a rand number -
+        r = rand()
 
         # how many strategies does this agent have?
         number_of_strategies = length(strategy_probability_array)
@@ -102,16 +104,15 @@ function _thermal_minority(gameAgentArray::Array{VLThermalMinorityGameAgent,1},
         partial_sum_value = 0.0
         partial_sum_array = Array{Float64,1}()
         for strategy_index = 1:number_of_strategies
-            
+        
             partial_sum_value += strategy_probability_array[strategy_index]
             push!(partial_sum_array, partial_sum_value)
         end
 
         # compute the selected strategy index, and get the selected strategy -
-        idx_selected_strategy = findfirst(x->x>=r,partial_sum_array)
+        idx_selected_strategy = findfirst(x->x>=r, partial_sum_array)
         if (isnothing(idx_selected_strategy) == true)
-            idx_selected_strategy = 1
-            @show r, partial_sum_array, P
+            @show r2, partial_sum_array, agentObject
         end
 
         actual_strategy_index = idx_sort_probabilities[idx_selected_strategy]
@@ -181,9 +182,9 @@ function execute(worldObject::VLThermalMinorityGameWorld, numberOfTimeSteps::Int
         logAssetPriceArray = Array{Float64,1}(undef, (numberOfTimeSteps + 1))
 
         # initialze gameWorldMemoryBuffer -
-        r = rand(1:length_of_actions, (agentMemorySize + 1))
+        ra = rand(1:length_of_actions, (agentMemorySize + 1))
         for x = 1:(agentMemorySize + 1)
-            push!(gameWorldMemoryBuffer, actions[r[x]])
+            push!(gameWorldMemoryBuffer, actions[ra[x]])
         end
         
         # initially asset price is 1.0 -
@@ -235,30 +236,46 @@ function execute(worldObject::VLThermalMinorityGameWorld, numberOfTimeSteps::Int
                     # so now we need to compute the probabaility for each strategy for this 
                     # agent -
                     agentStrategyCollection = agentObject.agentStrategyCollection
-                    factor_array = Array{Float64,1}()
-                    for strategy_object in agentStrategyCollection
+                    numberOfStrategiesPerAgent = length(agentStrategyCollection)
+                    factor_array = Array{Float64,1}(undef,numberOfStrategiesPerAgent)
+                    for sindex = 1:numberOfStrategiesPerAgent
                         
+                        strategy_object = agentStrategyCollection[sindex]
+
                         # update the score for this strategy -
                         strategy_prediction = predictionFuntion(signalVector, strategy_object)
 
                         # update the score -
                         strategy_object.score += -1 * sign(strategy_prediction * collective_action)
-
+                        if (strategy_object.score > 2*agentMemorySize)
+                            strategy_object.score = 2*agentMemorySize
+                        elseif (strategy_object.score < -2*agentMemorySize)
+                            strategy_object.score = -2*agentMemorySize
+                        end
+                        
                         # compute the factors -
-                        factorVal = exp(β*strategy_object.score)
-                        push!(factor_array, factorVal)
+                        factor_array[sindex] = exp(β*strategy_object.score)
                     end
 
                     # ok, so know that we that updated scores, lets compute the facrors -
-                    numberOfStrategiesPerAgent = length(agentStrategyCollection)
                     denom_value = sum(factor_array)
                     for agent_strategy_index = 1:numberOfStrategiesPerAgent
 
-                        # for this agent, get the strategy -
                         strategy_object = agentStrategyCollection[agent_strategy_index]
-                        strategy_object.probability = factor_array[agent_strategy_index]/denom_value
+
+                        # compute the probabaility -
+                        probability = factor_array[agent_strategy_index]/denom_value
+                        if (probability == 0.0)
+                            @show factor_array, agent_strategy_index, strategy_object.score
+                        end
+
+                        # for this agent, get the strategy -
+                        strategy_object.probability = probability
                     end
                 end # end agent update for loop 
+
+                # add the winning outcome to the system memory -
+                push!(gameWorldMemoryBuffer, winning_action)
 
                 # populate state table -
                 data_row = [temperature, sell, buy, winning_action, collective_action, logAssetPriceArray[time_step_index]]
