@@ -142,18 +142,14 @@ function _build_thermal_game_agent(numberOfStrategiesPerAgent::Int64, agentMemor
 
         # ok, let's build the collection of strategies for this agent, and the ranking array -
         strategyCollection = Array{VLThermalMinorityGameStrategy,1}(undef, numberOfStrategiesPerAgent)
-        strategyRankArray = Array{Float64,1}(undef, numberOfStrategiesPerAgent)
         for strategy_index = 1:numberOfStrategiesPerAgent
             
-            # setup -
-            strategyRankArray[strategy_index] = probability
-
             # build a strategy -
             strategyCollection[strategy_index] = _build_thermal_agent_strategy(agentMemorySize, 0, probability)            
         end
 
         # return -
-        return VLThermalMinorityGameAgent(strategyCollection, strategyRankArray, 0)
+        return VLThermalMinorityGameAgent(strategyCollection, 0)
     catch error
         rethrow(error)
     end

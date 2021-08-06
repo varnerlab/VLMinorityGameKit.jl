@@ -52,6 +52,8 @@ end
 
 # ----------------------------------------------------------------------------- #
 # Thermal -
+
+
 mutable struct VLThermalMinorityGameStrategy <: VLAbstractGameStrategy
 
     # data -
@@ -68,12 +70,10 @@ mutable struct VLThermalMinorityGameAgent <: VLAbstractGameAgent
     
     # data -
     agentStrategyCollection::Array{VLThermalMinorityGameStrategy,1}
-    strategyRankArray::Array{Float64,1}
     score::Int64
 
-    function VLThermalMinorityGameAgent(agents::Array{VLThermalMinorityGameStrategy,1}, 
-        ranks::Array{Float64,1}, score::Int64)
-        _ = new(agents, ranks, score)
+    function VLThermalMinorityGameAgent(agents::Array{VLThermalMinorityGameStrategy,1}, score::Int64)
+        _ = new(agents, score)
     end
 end
 
