@@ -4,7 +4,7 @@ using DataFrames
 using Plots
 
 path_to_game_world = "/Users/jeffreyvarner/Desktop/proposals/VLMinorityGameKit.jl/test/data/GW-GC-M10-S5-NA1001.bson"
-path_to_results_dir = "/Users/jeffreyvarner/Desktop/proposals/VLMinorityGameKit.jl/test/data/results/SIM-T-M10-S5-NA1001-L2.bson"
+path_to_results_dir = "/Users/jeffreyvarner/Desktop/proposals/VLMinorityGameKit.jl/test/data/results/SIM-GC-M10-S5-NA1001-L2.bson"
 d = BSON.load(path_to_game_world)
 gameWorld = d[:gameworld]
 

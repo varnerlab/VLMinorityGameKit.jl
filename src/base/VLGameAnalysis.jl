@@ -18,7 +18,7 @@ function compute_price_return(price_vector::Array{Float64,1})::Array{Float64,1}
             tomorrow_price = price_vector[time_index + 1]
 
             # calculate the return -
-            r = log(tomorrow_price/today_price)
+            r = log(tomorrow_price / today_price)
         
             # cache -
             price_return_array[time_index] = r
@@ -51,6 +51,42 @@ function compute_price_return(price_array::Array{Float64,2})::Array{Float64,2}
             # package -
             for time_index = 1:(number_of_steps - 1)
                 price_return_array[time_index,col_index] = local_return_array[time_index]
+            end
+        end
+
+        # return -
+        return price_return_array
+    catch error
+        rethrow(error)
+    end
+end
+
+function compute_price_return(simulation_result_array::Array{DataFrame,1})::Array{Float64,2}
+
+    try
+
+        # how many sample tables do we have?
+        number_of_samples = length(simulation_result_array)
+
+        # grab a table to get the dimensions -
+        tmp_table = simulation_result_array[1]
+        (number_of_steps, _) = size(tmp_table)
+
+        # initialize storage -
+        price_return_array = Array{Float64,2}(undef, (number_of_steps - 1), number_of_samples)
+        
+        # process each sample -
+        for sample_index = 1:number_of_samples
+            
+            # grab the price data -
+            P = simulation_result_array[sample_index][!,:price]
+        
+            # compute the return -
+            r_array = compute_price_return(P) # this has number_of_steps - 1 elements
+
+            # copy the data into the storage -
+            for step_index = 1:(number_of_steps - 1)
+                price_return_array[step_index, sample_index] = r_array[step_index]
             end
         end
 
