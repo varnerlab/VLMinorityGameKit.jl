@@ -138,7 +138,7 @@ function _build_thermal_game_agent(numberOfStrategiesPerAgent::Int64, agentMemor
     try
     
         # initialize -
-        probability = (1.0/numberOfStrategiesPerAgent)
+        probability = (1.0 / numberOfStrategiesPerAgent)
 
         # ok, let's build the collection of strategies for this agent, and the ranking array -
         strategyCollection = Array{VLThermalMinorityGameStrategy,1}(undef, numberOfStrategiesPerAgent)
@@ -186,15 +186,49 @@ end
 function _build_gc_agent_strategy(memory::Int64, score::Int64)::VLGCMinorityGameStrategy
 
     try
+
+        # initialize -
+        size_of_alphabet = 2
+        number_of_elements = (size_of_alphabet)^memory
+        outcome_vector = Array{Int,1}(undef, number_of_elements)
+        actions = [-1,1]
+
+        # generate an outcome vector -
+        for index = 1:number_of_elements
+            
+            # generate an index -
+            r_index = rand(1:2)
+
+            # outcome -
+            outcome_vector[index] = actions[r_index]
+        end
+
+        # return -
+        return VLGCMinorityGameStrategy(outcome_vector, score)  # default: score = 0 strategy
     catch error
         rethrow(error)
     end
 end
 
 function _build_gc_game_agent(numberOfStrategiesPerAgent::Int64, 
-    agentMemorySize::Int64, temperatute::Float64)::VLGCMinorityGameAgent
+    agentMemorySize::Int64)::VLGCMinorityGameAgent
 
     try
+
+        # build a collection of strategies for this agent -
+        # each agent is going to need numberOfStrategiesPerAgent strategies 
+        local_strategy_cache = Array{VLGCMinorityGameStrategy,1}(undef, numberOfStrategiesPerAgent)
+        for strategy_index = 1:numberOfStrategiesPerAgent
+            
+            # build the strategy - initially all strategies will have a score of zero -
+            strategy = _build_gc_agent_strategy(agentMemorySize, 0)
+
+            # package -
+            local_strategy_cache[strategy_index] = strategy
+        end
+
+        # build agent object - use the first strategy as the best -
+        return VLGCMinorityGameAgent(local_strategy_cache; bestStrategy=first(local_strategy_cache))
     catch error
         rethrow(error)
     end
@@ -203,6 +237,31 @@ end
 function _build_gc_game_world(kwargs_dictionary::Dict)::VLGCMinorityGameWorld
 
     try
+
+        # in order to create a game world, we need:
+        # numberOfAgents::Int64
+        # agentMemorySize::Int64
+        # gameAgentArray::Array{VLMinorityGameAgent,1}
+
+        # get data from the args -
+        numberOfAgents = kwargs_dictionary[:numberOfAgents]
+        agentMemorySize = kwargs_dictionary[:memory]
+        numberOfStrategiesPerAgent = kwargs_dictionary[:numberOfStrategiesPerAgent]
+
+        # iniialize -
+        gameAgentArray = Array{VLGCMinorityGameAgent,1}(undef, numberOfAgents)
+
+        # we have two of the three, lets create an array of game agents -
+        for agent_index = 1:numberOfAgents
+
+            println("Building agent $(agent_index) of $(numberOfAgents)")
+
+            # package -
+            gameAgentArray[agent_index] = _build_gc_game_agent(numberOfStrategiesPerAgent, agentMemorySize)
+        end
+
+        # build the game world -
+        return VLGCMinorityGameWorld(numberOfAgents, agentMemorySize, gameAgentArray)
     catch error
         rethrow(error)
     end

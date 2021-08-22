@@ -7,7 +7,7 @@ abstract type VLAbstractGameStrategy end
 # ----------------------------------------------------------------------------- #
 # General -
 struct VLMinorityGameSimulationResult
-    data::Union{Nothing, DataFrame}
+    data::Union{Nothing,DataFrame}
 end
 # ----------------------------------------------------------------------------- #
 
@@ -52,8 +52,6 @@ end
 
 # ----------------------------------------------------------------------------- #
 # Thermal -
-
-
 mutable struct VLThermalMinorityGameStrategy <: VLAbstractGameStrategy
 
     # data -
@@ -95,14 +93,27 @@ end
 # ----------------------------------------------------------------------------- #
 # Grand cannonical  -
 mutable struct VLGCMinorityGameStrategy <: VLAbstractGameStrategy
+
+    # data -
+    strategy::Array{Int,1}
+    score::Int64
+
+    function VLGCMinorityGameStrategy(strategy::Array{Int,1}, score::Int64)
+        _ = new(strategy, score)
+    end
 end
 
 mutable struct VLGCMinorityGameAgent <: VLAbstractGameAgent
     
     # data -
     agentStrategyCollection::Array{VLGCMinorityGameStrategy,1}
+    bestAgentStrategy::Union{Nothing,VLGCMinorityGameStrategy}
     score::Union{Int64,Float64}
 
+    function VLGCMinorityGameAgent(agentStrategyCollection::Array{VLGCMinorityGameStrategy,1}; 
+        bestStrategy::Union{Nothing,VLGCMinorityGameStrategy}=nothing, score::Union{Int64,Float64}=1)
+        _ = new(agentStrategyCollection, bestStrategy, score)
+    end
 end
 
 struct VLGCMinorityGameWorld <: VLAbstractGameWorld
@@ -110,7 +121,10 @@ struct VLGCMinorityGameWorld <: VLAbstractGameWorld
     # data -
     numberOfAgents::Int64
     agentMemorySize::Int64
-    temperature::Float64
     gameAgentArray::Array{VLGCMinorityGameAgent,1}
+    
+    function VLGCMinorityGameWorld(numberOfAgents::Int64, agentMemorySize::Int64, agentArray::Array{VLGCMinorityGameAgent,1})
+        _ = new(numberOfAgents, agentMemorySize, agentArray)
+    end
 end
 # ----------------------------------------------------------------------------- #
