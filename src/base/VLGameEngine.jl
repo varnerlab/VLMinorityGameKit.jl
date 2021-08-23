@@ -478,35 +478,20 @@ function execute(worldObject::VLGCMinorityGameWorld; kwargs...)::VLMinorityGameS
         kwargs_dictionary = Dict(kwargs)
         
         # check: number of steps -
-        numberOfTimeSteps = 100 # default
-        if (haskey(kwargs_dictionary, :numberOfTimeSteps) == true)
-            numberOfTimeSteps = kwargs_dictionary[:numberOfTimeSteps]
-        end
-
+        numberOfTimeSteps = get(kwargs_dictionary,:numberOfTimeSteps,100)
+        
         # check: voteManagerFunction -
-        voteManagerFunction = _gc_minority
-        if (haskey(kwargs_dictionary, :voteManagerFunction) == true)
-            voteManagerFunction = kwargs_dictionary[:voteManagerFunction]
-        end
-
+        voteManagerFunction = get(kwargs_dictionary, :voteManagerFunction, _gc_minority)
+        
         # check: predictionFuntion -
-        predictionFuntion = _basic_prediction
-        if (haskey(kwargs_dictionary, :predictionFuntion) == true)
-            predictionFuntion = kwargs_dictionary[:predictionFuntion]
-        end
-
+        predictionFuntion = get(kwargs_dictionary, :predictionFuntion, _basic_prediction)
+        
         # check: liquidity -
-        liquidity = 10001.0
-        if (haskey(kwargs_dictionary, :liquidity) == true)
-            liquidity = kwargs_dictionary[:liquidity]
-        end
-
+        liquidity = get(kwargs_dictionary, :liquidity, 10001.0)
+        
         # check: sigma -
-        σ = 0.0005
-        if (haskey(kwargs_dictionary, :σ) == true)
-            σ = kwargs_dictionary[:σ]
-        end
-
+        σ = get(kwargs_dictionary, :σ, 0.0005)
+        
         # initialize -
         numberOfAgents = worldObject.numberOfAgents
         agentMemorySize = worldObject.agentMemorySize
