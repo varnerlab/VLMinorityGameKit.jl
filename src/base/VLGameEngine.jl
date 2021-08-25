@@ -82,7 +82,8 @@ function _gc_minority(gameAgentArray::Array{VLGCMinorityGameAgent,1}, signalVect
         old_score = agentObject.score
 
          # compute a probability that the agen will skip this round, based on their score -
-        P = 1 / (1 + exp(-0.1 * old_score)) # P of trading this round -
+        P = 1 / (1 + exp(-0.01 * old_score)) # P of trading this round -
+        #P = (1/√(2*π))*exp(-0.5*old_score^2)
         r = rand()
         if (P > r) # the agent trades -
             
@@ -476,22 +477,13 @@ function execute(worldObject::VLGCMinorityGameWorld; kwargs...)::VLMinorityGameS
 
         # ok: so we need a bunch of stuff. if this stuff is not in the kwargs dictionary, then we need to provide default values -
         kwargs_dictionary = Dict(kwargs)
-        
-        # check: number of steps -
-        numberOfTimeSteps = get(kwargs_dictionary,:numberOfTimeSteps,100)
-        
-        # check: voteManagerFunction -
-        voteManagerFunction = get(kwargs_dictionary, :voteManagerFunction, _gc_minority)
-        
-        # check: predictionFuntion -
-        predictionFuntion = get(kwargs_dictionary, :predictionFuntion, _basic_prediction)
-        
-        # check: liquidity -
-        liquidity = get(kwargs_dictionary, :liquidity, 10001.0)
-        
-        # check: sigma -
-        σ = get(kwargs_dictionary, :σ, 0.0005)
-        
+        numberOfTimeSteps = get(kwargs_dictionary,:numberOfTimeSteps, 100) # check: number of steps -
+        voteManagerFunction = get(kwargs_dictionary, :voteManagerFunction, _gc_minority) # check: voteManagerFunction -
+        predictionFuntion = get(kwargs_dictionary, :predictionFuntion, _basic_prediction) # check: predictionFuntion -
+        liquidity = get(kwargs_dictionary, :liquidity, 10001.0)  # check: liquidity -
+        σ = get(kwargs_dictionary, :σ, 0.0005) # check: sigma -
+        agent_score_refresh_rate = get(kwargs_dictionary, :agentScoreRefreshRate, 50) # check: sigma -
+
         # initialize -
         numberOfAgents = worldObject.numberOfAgents
         agentMemorySize = worldObject.agentMemorySize
@@ -555,8 +547,12 @@ function execute(worldObject::VLGCMinorityGameWorld; kwargs...)::VLMinorityGameS
                 agentPrediction = agentPredictionArray[agent_index]
 
                 # if the agent predicted correctly, then increase personal score -
-                agentObject.score += -1 * sign(agentPrediction * collective_action)
-
+                if (mod(time_step_index,agent_score_refresh_rate) == 0)
+                    agentObject.score = 0
+                else
+                    agentObject.score += -1 * sign(agentPrediction * collective_action)
+                end
+                
                 # let's re-rank all the strategies for this agent, and then put the new scores in an array that we can sort them
                 agentStrategyCollection = agentObject.agentStrategyCollection
                 tmp_score_array = Array{Int64,1}()

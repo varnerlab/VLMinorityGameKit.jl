@@ -111,7 +111,7 @@ mutable struct VLGCMinorityGameAgent <: VLAbstractGameAgent
     score::Union{Int64,Float64}
 
     function VLGCMinorityGameAgent(agentStrategyCollection::Array{VLGCMinorityGameStrategy,1}; 
-        bestStrategy::Union{Nothing,VLGCMinorityGameStrategy}=nothing, score::Union{Int64,Float64}=1)
+        bestStrategy::Union{Nothing,VLGCMinorityGameStrategy}=nothing, score::Union{Int64,Float64}=0)
         _ = new(agentStrategyCollection, bestStrategy, score)
     end
 end
