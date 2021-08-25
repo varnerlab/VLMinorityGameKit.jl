@@ -84,7 +84,7 @@ function _gc_minority(gameAgentArray::Array{VLGCMinorityGameAgent,1}, signalVect
          # compute a probability that the agen will skip this round, based on their score -
         P = 1 / (1 + exp(-0.1 * old_score)) # P of trading this round -
         r = rand()
-        if (P > r) # we trade -
+        if (P > r) # the agent trades -
             
             # get the strategy object -
             strategy_object = agentObject.bestAgentStrategy
